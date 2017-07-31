@@ -1,0 +1,29 @@
+{
+  "manifest_version": 2,
+  "name": "Tabmarks",
+  "version": "1.0.0",
+  "description": "Web Extension for handling groups of tabs persisted as bookmarks",
+  "homepage_url": "https://github.com/hupf/tabmarks",
+  "author": "Mathis Hofer",
+  "icons": {
+    "48": "icons/tabmarks.svg"
+  },
+  "permissions": [
+    "bookmarks",
+    "tabs"
+  ],
+  "background": {
+    "scripts": [
+      "background/tabmarks.js"
+    ]
+  },
+  "browser_action": {
+    "browser_style": true,
+    "default_icon": "icons/tabmarks.svg",
+    "default_title": "Tabmarks",
+    "default_popup": "main-popup/main-popup.html"
+  },
+  "web_accessible_resources": [
+    "icons/tabmarks.svg"
+  ]
+}
