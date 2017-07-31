@@ -5,9 +5,17 @@ Web Extension for handling groups of tabs persisted as bookmarks.
 
 ## Usage
 
+Install dependencies:
+
+    yarn install
+
 Open Firefox and load the extension temporarily in the browser:
 
-    npm start
+    yarn start
+
+Linting:
+
+    yarn run lint
 
 
 ## Author

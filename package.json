@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "web-ext run",
-    "lint": "web-ext lint",
+    "lint": "eslint .",
     "build": "web-ext build",
     "sign": "web-ext sign --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET"
   },
@@ -20,7 +20,11 @@
     "url": "https://github.com/hupf/tabmarks/issues"
   },
   "homepage": "https://github.com/hupf/tabmarks#readme",
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^4.3.0",
+    "eslint-config-airbnb-base": "^11.3.1",
+    "eslint-plugin-import": "^2.7.0",
     "web-ext": "^1.10.1"
   }
 }
