@@ -1,11 +1,29 @@
 const tabmarks = {
+  mainPopupPort: null,
   selectedGroupFolderId: null,
   tabsWindowId: null,
 
   init() {
+    browser.runtime.onConnect.addListener(this.handleConnect.bind(this));
     browser.runtime.onMessage.addListener(this.handleMessage.bind(this));
     // browser.tabs.onUpdated.addListener(updateActiveTab);
     // browser.tabs.onActivated.addListener(updateActiveTab);
+    this.loadGroups();
+  },
+
+  handleConnect(port) {
+    port.onMessage.addListener(this.handleMessage.bind(this));
+    if (port.name === 'mainPopup') {
+      this.mainPopupPort = port;
+      this.updateMainPopupGroupList();
+    }
+    port.onDisconnect.addListener(this.handleDisconnect.bind(this));
+  },
+
+  handleDisconnect(port) {
+    if (port.name === 'mainPopup') {
+      this.mainPopupPort = null;
+    }
   },
 
   handleMessage(message) {
@@ -19,6 +37,27 @@ const tabmarks = {
       default:
         console.error('Received unknown message:', message);
     }
+  },
+
+  getRootFolder() {
+    // TODO: make configurable
+    return browser.bookmarks.search({ title: 'Other Bookmarks' })
+      .then(result => result && result.length && result[0]);
+  },
+
+  loadGroups() {
+    return this.getRootFolder()
+      .then(rootFolder => rootFolder && browser.bookmarks.getChildren(rootFolder.id))
+      .then((groupFolders) => {
+        if (groupFolders) {
+          this.groups = groupFolders
+            .filter(f => !f.url)
+            .map(f => ({ id: f.id, name: f.title }));
+          this.updateMainPopupGroupList();
+          return this.groups;
+        }
+        return null;
+      });
   },
 
   showCreatePanel(tabsWindowId) {
@@ -48,6 +87,12 @@ const tabmarks = {
     browser.browserAction.setBadgeText({
       text: folder ? folder.title : '',
     });
+  },
+
+  updateMainPopupGroupList() {
+    if (this.mainPopupPort) {
+      this.mainPopupPort.postMessage({ message: 'updateGroupList', groups: this.groups });
+    }
   },
 
 

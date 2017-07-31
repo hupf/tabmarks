@@ -24,13 +24,17 @@
           <div class="text-shortcut"></div>
         </div>
         <div class="panel-section-separator"></div>
-        <div class="panel-list-item disabled">
-          <div class="icon"></div>
-          <div class="text">No groups available</div>
-          <div class="text-shortcut"></div>
-        </div>
+        <div id="group-list"></div>
       </div>
     </div>
+
+    <template id="group">
+      <div class="panel-list-item tabmarks-group-item">
+        <div class="icon"></div>
+        <div class="text"></div>
+        <div class="text-shortcut"></div>
+      </div>
+    </template>
 
     <script src="main-popup.js"></script>
     <script src="../node_modules/zepto/dist/zepto.min.js"></script>
