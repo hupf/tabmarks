@@ -4,7 +4,11 @@
   "description": "Web Extension for handling groups of tabs persisted as bookmarks",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "web-ext run",
+    "lint": "web-ext lint",
+    "build": "web-ext build",
+    "sign": "web-ext sign --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET"
   },
   "repository": {
     "type": "git",
