@@ -7,6 +7,7 @@ const main = {
   init() {
     browser.runtime.onConnect.addListener(this.handleConnect.bind(this));
     browser.runtime.onMessage.addListener(this.handleMessage.bind(this));
+
     this.loadSelectedGroupId();
     this.loadGroups();
   },
@@ -42,36 +43,21 @@ const main = {
     }
   },
 
-  getRootFolder() {
-    // TODO: make configurable
-    return browser.bookmarks.search({ title: 'Other Bookmarks' })
-      .then(result => result && result.length && result[0]);
-  },
-
   loadSelectedGroupId() {
-    browser.storage.local.get('selectedGroupId')
-      .then((result) => {
-        this.selectGroup(result.selectedGroupId);
-      });
+    return tm.groups.getSelectedGroupId().then(groupId => this.selectGroup(groupId));
   },
 
   saveSelectedGroupId() {
-    browser.storage.local.set({ selectedGroupId: this.selectedGroupId });
+    return tm.groups.saveSelectedGroupId(this.selectedGroupId);
   },
 
   loadGroups() {
-    return this.getRootFolder()
-      .then(rootFolder => rootFolder && browser.bookmarks.getChildren(rootFolder.id))
-      .then((groupFolders) => {
-        if (groupFolders) {
-          this.groups = groupFolders
-            .filter(f => !f.url)
-            .map(f => ({ id: f.id, name: f.title }));
-          this.updateMainPopupGroupList();
-          return this.groups;
-        }
-        return null;
-      });
+    return tm.groups.getAll().then((groups) => {
+      if (groups) {
+        this.groups = groups;
+        this.updateMainPopupGroupList();
+      }
+    });
   },
 
   showCreatePanel(tabsWindowId) {
@@ -95,7 +81,7 @@ const main = {
         }
         return folder;
       })
-      .then(folder => this.updateSelectedGroup(folder))
+      .then(folder => this.updateSelectedGroup(folder.id))
       .then(() => this.loadGroups());
   },
 
@@ -106,23 +92,20 @@ const main = {
     }
 
     // TODO: confirm if non-persisted tabs should be closed
-    Promise.all([tm.bookmarks.getFolder(groupId), tm.tabs.getCurrentWindowId()])
-      .then(([folder, windowId]) => {
-        this.updateSelectedGroup(folder);
-        if (folder) {
-          tm.tabs.openOfGroup(windowId, folder.id);
-        }
-      });
+    this.updateSelectedGroup(groupId);
+    tm.tabs.getCurrentWindowId().then(windowId => tm.tabs.openOfGroup(windowId, groupId));
   },
 
-  updateSelectedGroup(folder) {
-    this.selectedGroupId = folder ? folder.id : null;
-    this.saveSelectedGroupId();
+  updateSelectedGroup(groupId) {
+    tm.bookmarks.getFolder(groupId).then((folder) => {
+      this.selectedGroupId = folder ? folder.id : null;
+      this.saveSelectedGroupId();
 
-    browser.browserAction.setTitle({ title: folder ? `Tabmarks (${folder.title})` : 'Tabmarks' });
-    browser.browserAction.setBadgeBackgroundColor({ color: '#666' });
-    browser.browserAction.setBadgeText({
-      text: folder ? folder.title : '',
+      browser.browserAction.setTitle({ title: folder ? `Tabmarks (${folder.title})` : 'Tabmarks' });
+      browser.browserAction.setBadgeBackgroundColor({ color: '#666' });
+      browser.browserAction.setBadgeText({
+        text: folder ? folder.title : '',
+      });
     });
   },
 

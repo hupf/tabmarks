@@ -12,6 +12,10 @@ tm.tabs = {
     });
   },
 
+  getOfCurrentWindow() {
+    return this.getCurrentWindowId().then(windowId => this.getOfWindow(windowId));
+  },
+
   openOfGroup(windowId, groupId) {
     return this.getOfWindow(windowId)
       .then(tabs => tabs.map(t => t.id))
