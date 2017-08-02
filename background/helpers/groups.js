@@ -16,6 +16,10 @@ tm.groups = {
     return browser.storage.local.set({ selectedGroupId: groupId });
   },
 
+  getSelectedGroupFolder() {
+    return this.getSelectedGroupId().then(groupId => tm.bookmarks.getFolder(groupId));
+  },
+
   getAll() {
     return tm.bookmarks.getRootFolder()
       .then(rootFolder => rootFolder && browser.bookmarks.getChildren(rootFolder.id))

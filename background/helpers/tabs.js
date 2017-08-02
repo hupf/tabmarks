@@ -6,6 +6,10 @@ tm.tabs = {
     return browser.windows.getCurrent().then(currentWindow => currentWindow.id);
   },
 
+  get(tabId) {
+    return browser.tabs.get(tabId);
+  },
+
   getOfWindow(windowId) {
     return new Promise((resolve) => {
       browser.tabs.query({ windowId, pinned: false }, resolve);
