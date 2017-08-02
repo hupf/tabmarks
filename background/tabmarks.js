@@ -8,6 +8,7 @@ const tabmarks = {
     browser.runtime.onMessage.addListener(this.handleMessage.bind(this));
     // browser.tabs.onUpdated.addListener(updateActiveTab);
     // browser.tabs.onActivated.addListener(updateActiveTab);
+    this.loadSelectedGroupId();
     this.loadGroups();
   },
 
@@ -46,6 +47,18 @@ const tabmarks = {
     // TODO: make configurable
     return browser.bookmarks.search({ title: 'Other Bookmarks' })
       .then(result => result && result.length && result[0]);
+  },
+
+  loadSelectedGroupId() {
+    browser.storage.local.get('selectedGroupId')
+      .then((result) => {
+        this.selectedGroupId = result.selectedGroupId;
+        this.selectGroup(this.selectedGroupId);
+      });
+  },
+
+  saveSelectedGroupId() {
+    browser.storage.local.set({ selectedGroupId: this.selectedGroupId });
   },
 
   loadGroups() {
@@ -96,6 +109,7 @@ const tabmarks = {
 
   updateSelectedGroup(folder) {
     this.selectedGroupId = folder ? folder.id : null;
+    this.saveSelectedGroupId();
     browser.browserAction.setTitle({ title: folder ? `Tabmarks (${folder.title})` : 'Tabmarks' });
     browser.browserAction.setBadgeBackgroundColor({ color: '#666' });
     browser.browserAction.setBadgeText({
