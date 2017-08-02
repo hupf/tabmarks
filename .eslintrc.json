@@ -6,5 +6,8 @@
   },
   "extends": [
     "airbnb-base"
-  ]
+  ],
+  "globals": {
+    "tm": true
+  }
 }
