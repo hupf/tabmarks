@@ -13,11 +13,11 @@ tm.ui = {
     browser.browserAction.setBadgeBackgroundColor({ color: '#666' });
     browser.browserAction.setTitle({
       title: folder ? `Tabmarks (${folder.title})` : 'Tabmarks',
-      tabId: tab.id,
+      // tabId: tab.id, // TODO: does somehow not work, FF bug?
     });
     browser.browserAction.setBadgeText({
       text: folder ? folder.title : '',
-      tabId: tab.id,
+      // tabId: tab.id, // TODO: does somehow not work, FF bug?
     });
   },
 

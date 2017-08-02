@@ -16,15 +16,23 @@ tm.tabsSync = {
   onAttached(tabId, attachInfo) {
     if (this.disabled) return;
 
-    console.log('onAttached', tabId, attachInfo);
-    // tm.ui.updateTabBrowserActionByWindowId(tab);
+    tm.groups.getSelectedGroupId(attachInfo.newWindowId).then((groupId) => {
+      if (!groupId) return;
+
+      tm.tabs.get(tabId).then(tab => tm.bookmarks.createFromTab(tab, attachInfo.newPosition));
+      // TODO: update browserAction
+    });
   },
 
   onDetached(tabId, detachInfo) {
     if (this.disabled) return;
 
-    console.log('onDetached', tabId, detachInfo);
-    // tm.ui.updateTabBrowserActionByWindowId(tab);
+    tm.groups.getSelectedGroupId(detachInfo.oldWindowId).then((groupId) => {
+      if (!groupId) return;
+
+      tm.bookmarks.removeAtIndex(groupId, detachInfo.oldPosition);
+      // TODO: update browserAction
+    });
   },
 
   onCreated(tab) {

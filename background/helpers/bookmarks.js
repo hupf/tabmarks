@@ -50,14 +50,14 @@ tm.bookmarks = {
       .then(children => Promise.all(children.map(c => browser.bookmarks.remove(c.id))));
   },
 
-  createFromTab(tab) {
+  createFromTab(tab, index) {
     return tm.groups.getSelectedGroupId(tab.windowId)
       .then(parentId =>
         browser.bookmarks.create({
           parentId,
           title: tab.title,
           url: tab.url,
-          index: tab.index,
+          index: index != null ? index : tab.index,
         }));
   },
 
@@ -68,6 +68,12 @@ tm.bookmarks = {
         title: tab.title,
         url: tab.url,
       }));
+  },
+
+  removeAtIndex(folderId, index) {
+    return this.getChildren(folderId)
+      .then(children => children[index].id)
+      .then(childId => browser.bookmarks.remove(childId));
   },
 
   moveInSelectedGroup(windowId, fromIndex, toIndex) {
