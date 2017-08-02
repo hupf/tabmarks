@@ -2,10 +2,6 @@ if (!window.tm) window.tm = {};
 
 tm.tabs = {
 
-  getCurrentWindowId() {
-    return browser.windows.getCurrent().then(currentWindow => currentWindow.id);
-  },
-
   get(tabId) {
     return browser.tabs.get(tabId);
   },
@@ -16,16 +12,18 @@ tm.tabs = {
     });
   },
 
-  getOfCurrentWindow() {
-    return this.getCurrentWindowId().then(windowId => this.getOfWindow(windowId));
+  getNonEmptyOfWindow(windowId) {
+    return this.getOfWindow(windowId)
+      .then(tabs => tabs.filter(t => t.url !== 'about:newtab' && t.url !== 'about:blank'));
   },
 
-  openOfGroup(windowId, groupId) {
+  openGroup(windowId, groupId) {
     return this.getOfWindow(windowId)
       .then(tabs => tabs.map(t => t.id))
       .then(previousTabIds =>
         tm.bookmarks.getChildren(groupId)
           .then((bookmarks) => {
+            this.disableSync();
             if (bookmarks.length === 0) {
               // For empty groups, make sure at least one tab is open,
               // to not accidentially close the window
@@ -33,7 +31,19 @@ tm.tabs = {
             }
             return Promise.all(bookmarks.map((bookmark, i) => this.open(bookmark, i === 0)));
           })
-          .then(() => this.close(previousTabIds)));
+          .then(() => this.close(previousTabIds))
+          .then(this.enableSync, this.enableSync));
+  },
+
+  openEmptyGroup(windowId) {
+    return tm.tabs.getOfWindow(windowId)
+      .then(tabs => tabs.map(t => t.id))
+      .then((previousTabIds) => {
+        this.disableSync();
+        return tm.tabs.open(null, true)
+          .then(() => tm.tabs.close(previousTabIds))
+          .then(this.enableSync, this.enableSync);
+      });
   },
 
   open(bookmark, active) {
@@ -45,6 +55,17 @@ tm.tabs = {
 
   close(tabIds) {
     return browser.tabs.remove(tabIds);
+  },
+
+  disableSync() {
+    tm.tabsSync.disabled = true;
+  },
+
+  enableSync(value) {
+    setTimeout(() => {
+      tm.tabsSync.disabled = false;
+    });
+    return value;
   },
 
 };

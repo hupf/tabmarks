@@ -18,6 +18,7 @@
       "background/helpers/bookmarks.js",
       "background/helpers/groups.js",
       "background/helpers/tabs.js",
+      "background/helpers/ui.js",
       "background/main.js",
       "background/tabs-sync.js"
     ]

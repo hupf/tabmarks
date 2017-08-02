@@ -1,23 +1,36 @@
 if (!window.tm) window.tm = {};
 
 tm.groups = {
-  selectedGroupId: null,
+  selectedGroupIds: null,
 
-  getSelectedGroupId() {
-    if (this.selectedGroupId) {
-      return Promise.resolve(this.selectedGroupId);
+  getSelectedGroupId(windowId) {
+    return this.getSelectedGroupIds()
+      .then(groupIds => Object.prototype.hasOwnProperty.call(groupIds, windowId) &&
+            groupIds[windowId]);
+  },
+
+  saveSelectedGroupId(windowId, groupId) {
+    return this.getSelectedGroupIds().then((groupIds) => {
+      this.selectedGroupIds = Object.assign({}, groupIds);
+      this.selectedGroupIds[windowId] = groupId;
+      return browser.storage.local.set({ selectedGroupIds: this.selectedGroupIds });
+    });
+  },
+
+  getSelectedGroupIds() {
+    if (this.selectedGroupIds) {
+      return Promise.resolve(this.selectedGroupIds);
     }
-    return browser.storage.local.get('selectedGroupId')
-      .then(result => result.selectedGroupId);
+    return browser.storage.local.get('selectedGroupIds')
+      .then((result) => {
+        this.selectedGroupIds = result.selectedGroupIds;
+        return result.selectedGroupIds || {};
+      });
   },
 
-  saveSelectedGroupId(groupId) {
-    this.selectedGroupId = groupId;
-    return browser.storage.local.set({ selectedGroupId: groupId });
-  },
-
-  getSelectedGroupFolder() {
-    return this.getSelectedGroupId().then(groupId => tm.bookmarks.getFolder(groupId));
+  getSelectedGroupFolder(windowId) {
+    return this.getSelectedGroupId(windowId)
+      .then(groupId => tm.bookmarks.getFolder(groupId));
   },
 
   getAll() {

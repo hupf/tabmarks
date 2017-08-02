@@ -1,14 +1,15 @@
 const main = {
 
   mainPopupPort: null,
-  selectedGroupId: null,
-  tabsWindowId: null,
+  createGroupWindowId: null,
 
   init() {
     browser.runtime.onConnect.addListener(this.handleConnect.bind(this));
     browser.runtime.onMessage.addListener(this.handleMessage.bind(this));
 
-    this.loadSelectedGroupId();
+    browser.windows.onCreated.addListener(w => this.onWindowCreated(w.id));
+    browser.windows.onRemoved.addListener(this.onWindowRemoved.bind(this));
+
     this.loadGroups();
   },
 
@@ -30,25 +31,26 @@ const main = {
   handleMessage(message) {
     switch (message.message) {
       case 'showCreatePanel':
-        this.showCreatePanel(message.tabsWindowId);
+        this.createGroupWindowId = message.windowId;
+        this.showCreatePanel();
         break;
       case 'createGroup':
-        this.createGroup(message.groupName);
+        this.createGroup(this.createGroupWindowId, message.groupName);
         break;
       case 'selectGroup':
-        this.selectGroup(message.groupId);
+        this.selectGroup(message.windowId, message.groupId);
         break;
       default:
         console.error('Received unknown message:', message);
     }
   },
 
-  loadSelectedGroupId() {
-    return tm.groups.getSelectedGroupId().then(groupId => this.selectGroup(groupId));
+  onWindowCreated(windowId) {
+    tm.groups.getSelectedGroupId(windowId).then(groupId => this.selectGroup(windowId, groupId));
   },
 
-  saveSelectedGroupId() {
-    return tm.groups.saveSelectedGroupId(this.selectedGroupId);
+  onWindowRemoved(windowId) {
+    tm.groups.saveSelectedGroupId(windowId, null);
   },
 
   loadGroups() {
@@ -60,8 +62,7 @@ const main = {
     });
   },
 
-  showCreatePanel(tabsWindowId) {
-    this.tabsWindowId = tabsWindowId;
+  showCreatePanel() {
     return browser.windows.create({
       type: 'panel',
       url: browser.extension.getURL('create-panel/create-panel.html'),
@@ -70,43 +71,32 @@ const main = {
     });
   },
 
-  createGroup(name) {
-    // TODO: confirm if non-persisted tabs should be closed
-    tm.bookmarks.createFolder(name)
-      .then((folder) => {
-        if (this.tabsWindowId) {
-          return tm.bookmarks.saveTabs(folder, this.tabsWindowId)
-            .then(() => folder);
-          // TODO: open new tab & close open bookmarks if creating empty group
-        }
-        return folder;
-      })
-      .then(folder => this.updateSelectedGroup(folder.id))
-      .then(() => this.loadGroups());
+  createGroup(windowId, name) {
+    tm.bookmarks.createFolder(name).then((folder) => {
+      // Create empty group with new tab (and close currently open tabs)
+      tm.tabs.openEmptyGroup(windowId);
+
+      // TODO: if no group is selected (first-time user), allow to create a group from
+      // the currently open tabs (requires second option in main popup)
+
+      this.updateSelectedGroup(windowId, folder.id);
+      this.loadGroups();
+    });
   },
 
-  selectGroup(groupId) {
+  selectGroup(windowId, groupId) {
     if (!groupId) {
-      this.updateSelectedGroup(null);
+      this.updateSelectedGroup(windowId, null);
       return;
     }
 
-    // TODO: confirm if non-persisted tabs should be closed
-    this.updateSelectedGroup(groupId);
-    tm.tabs.getCurrentWindowId().then(windowId => tm.tabs.openOfGroup(windowId, groupId));
+    this.updateSelectedGroup(windowId, groupId).then(() =>
+      tm.tabs.openGroup(windowId, groupId));
   },
 
-  updateSelectedGroup(groupId) {
-    tm.bookmarks.getFolder(groupId).then((folder) => {
-      this.selectedGroupId = folder ? folder.id : null;
-      this.saveSelectedGroupId();
-
-      browser.browserAction.setTitle({ title: folder ? `Tabmarks (${folder.title})` : 'Tabmarks' });
-      browser.browserAction.setBadgeBackgroundColor({ color: '#666' });
-      browser.browserAction.setBadgeText({
-        text: folder ? folder.title : '',
-      });
-    });
+  updateSelectedGroup(windowId, groupId) {
+    return tm.groups.saveSelectedGroupId(windowId, groupId).then(() =>
+      tm.ui.updateWindowBrowserActions(windowId, groupId));
   },
 
   updateMainPopupGroupList() {

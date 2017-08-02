@@ -9,26 +9,40 @@ tm.bookmarks = {
   },
 
   getFolder(folderId) {
+    if (!folderId) {
+      return Promise.resolve(null);
+    }
+
     return browser.bookmarks.get(folderId)
       .then((result) => {
         if (result && result.length) {
           return result[0];
         }
         return null;
-      });
+      }, () => null);
   },
 
   getChildren(folderId) {
     return browser.bookmarks.getChildren(folderId);
   },
 
-  getOfSelectedGroup() {
-    return tm.groups.getSelectedGroupId()
-      .then(groupId => this.getChildren(groupId));
+  getOfWindow(windowId) {
+    return tm.groups.getSelectedGroupId(windowId)
+      .then((groupId) => {
+        if (groupId) {
+          return this.getChildren(groupId);
+        }
+        return null;
+      });
   },
 
   createFolder(name) {
-    return browser.bookmarks.create({ title: name });
+    return this.getRootFolder()
+      .then(root => root.id)
+      .then(parentId => browser.bookmarks.create({
+        parentId,
+        title: name,
+      }));
   },
 
   emptyFolder(folderId) {
@@ -36,18 +50,19 @@ tm.bookmarks = {
       .then(children => Promise.all(children.map(c => browser.bookmarks.remove(c.id))));
   },
 
-  createInSelectedGroup(tab) {
-    return tm.groups.getSelectedGroupId().then(parentId =>
-      browser.bookmarks.create({
-        parentId,
-        title: tab.title,
-        url: tab.url,
-        index: tab.index,
-      }));
+  createFromTab(tab) {
+    return tm.groups.getSelectedGroupId(tab.windowId)
+      .then(parentId =>
+        browser.bookmarks.create({
+          parentId,
+          title: tab.title,
+          url: tab.url,
+          index: tab.index,
+        }));
   },
 
-  updateInSelectedGroup(tab) {
-    return this.getOfSelectedGroup()
+  updateFromTab(tab) {
+    return this.getOfWindow(tab.windowId)
       .then(bookmarks => bookmarks[tab.index])
       .then(bookmark => browser.bookmarks.update(bookmark.id, {
         title: tab.title,
@@ -55,17 +70,16 @@ tm.bookmarks = {
       }));
   },
 
-  moveInSelectedGroup(fromIndex, toIndex) {
-    return tm.groups.getSelectedGroupId()
+  moveInSelectedGroup(windowId, fromIndex, toIndex) {
+    return tm.groups.getSelectedGroupId(windowId)
       .then(parentId =>
-        this.getChildren(parentId)
+        parentId && this.getChildren(parentId)
           .then(bookmarks => bookmarks[fromIndex])
           .then(bookmark => browser.bookmarks.move(bookmark.id, { parentId, index: toIndex })));
   },
 
-  saveTabs(folder, windowId) {
-    return tm.tabs.getOfWindow(windowId)
-      .then(tabs => tabs.filter(t => t.url !== 'about:newtab' && t.url !== 'about:blank'))
+  saveTabsOfWindow(windowId, folder) {
+    return tm.tabs.getNonEmptyOfWindow(windowId)
       .then(tabs => Promise.all(tabs.map(tab =>
         browser.bookmarks.create({
           parentId: folder.id,

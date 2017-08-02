@@ -8,10 +8,8 @@ const mainPopup = {
   },
 
   handleClick(e) {
-    if (e.target.closest('.tabmarks-save-as-group')) {
-      this.saveAsGroup();
-    } else if (e.target.closest('.tabmarks-create-empty-group')) {
-      this.createEmptyGroup();
+    if (e.target.closest('.tabmarks-create-group')) {
+      this.createGroup();
     } else if (e.target.closest('.tabmarks-group-item')) {
       const groupId = e.target.closest('.tabmarks-group-item').dataset.groupId;
       this.selectGroup(groupId);
@@ -32,29 +30,25 @@ const mainPopup = {
     window.close();
   },
 
-  saveAsGroup() {
-    browser.windows.getCurrent().then((currentWindow) => {
+  createGroup() {
+    this.getCurrentWindowId().then((windowId) => {
       this.port.postMessage({
         message: 'showCreatePanel',
-        tabsWindowId: currentWindow.id,
+        windowId,
       });
       this.closePopup();
     });
   },
 
-  createEmptyGroup() {
-    this.port.postMessage({
-      message: 'showCreatePanel',
-    });
-    this.closePopup();
-  },
-
   selectGroup(groupId) {
-    this.port.postMessage({
-      message: 'selectGroup',
-      groupId,
+    this.getCurrentWindowId().then((windowId) => {
+      this.port.postMessage({
+        message: 'selectGroup',
+        windowId,
+        groupId,
+      });
+      this.closePopup();
     });
-    this.closePopup();
   },
 
   updateGroupList(groups) {
@@ -77,6 +71,10 @@ const mainPopup = {
     const text = t.content.querySelectorAll('.text');
     text[0].textContent = name;
     return document.importNode(t.content, true);
+  },
+
+  getCurrentWindowId() {
+    return browser.windows.getCurrent().then(w => w.id);
   },
 };
 
