@@ -52,8 +52,7 @@ const tabmarks = {
   loadSelectedGroupId() {
     browser.storage.local.get('selectedGroupId')
       .then((result) => {
-        this.selectedGroupId = result.selectedGroupId;
-        this.selectGroup(this.selectedGroupId);
+        this.selectGroup(result.selectedGroupId);
       });
   },
 
@@ -87,11 +86,13 @@ const tabmarks = {
   },
 
   createGroup(name) {
+    // TODO: confirm if non-persisted tabs should be closed
     this.createBookmarkFolder(name)
       .then((folder) => {
         if (this.tabsWindowId) {
           return this.createTabBookmarks(folder, this.tabsWindowId)
             .then(() => folder);
+          // TODO: open new tab & close open bookmarks if creating empty group
         }
         return folder;
       })
@@ -100,16 +101,25 @@ const tabmarks = {
   },
 
   selectGroup(groupId) {
-    browser.bookmarks.get(groupId).then((folder) => {
-      if (folder && folder.length) {
-        this.updateSelectedGroup(folder[0]);
-      }
-    });
+    if (!groupId) {
+      this.updateSelectedGroup(null);
+      return;
+    }
+
+    // TODO: confirm if non-persisted tabs should be closed
+    Promise.all([this.getBookmark(groupId), this.getCurrentWindowId()])
+      .then(([folder, windowId]) => {
+        this.updateSelectedGroup(folder);
+        if (folder) {
+          this.openTabsOfGroup(windowId, folder.id);
+        }
+      });
   },
 
   updateSelectedGroup(folder) {
     this.selectedGroupId = folder ? folder.id : null;
     this.saveSelectedGroupId();
+
     browser.browserAction.setTitle({ title: folder ? `Tabmarks (${folder.title})` : 'Tabmarks' });
     browser.browserAction.setBadgeBackgroundColor({ color: '#666' });
     browser.browserAction.setBadgeText({
@@ -124,11 +134,45 @@ const tabmarks = {
   },
 
 
+  // Windows functions
+
+  getCurrentWindowId() {
+    return browser.windows.getCurrent().then(currentWindow => currentWindow.id);
+  },
+
+
   // Tabs functions
 
   getTabs(windowId) {
     return new Promise((resolve) => {
       browser.tabs.query({ windowId, pinned: false }, resolve);
+    });
+  },
+
+  closeTabs(tabIds) {
+    return browser.tabs.remove(tabIds);
+  },
+
+  openTabsOfGroup(windowId, groupId) {
+    return this.getTabs(windowId)
+      .then(tabs => tabs.map(t => t.id))
+      .then(previousTabIds =>
+        this.getBookmarks(groupId)
+          .then((bookmarks) => {
+            if (bookmarks.length === 0) {
+              // For empty groups, make sure at least one tab is open,
+              // to not accidentially close the window
+              return this.openTab(null, true);
+            }
+            return Promise.all(bookmarks.map((bookmark, i) => this.openTab(bookmark, i === 0)));
+          })
+          .then(() => this.closeTabs(previousTabIds)));
+  },
+
+  openTab(bookmark, active) {
+    return browser.tabs.create({
+      url: bookmark && bookmark.url,
+      active,
     });
   },
 
@@ -140,13 +184,28 @@ const tabmarks = {
   },
 
   createTabBookmarks(folder, windowId) {
-    return this.getTabs(windowId).then(tabs =>
-      Promise.all(tabs.map(tab =>
+    return this.getTabs(windowId)
+      .then(tabs => tabs.filter(t => t.url !== 'about:newtab'))
+      .then(tabs => Promise.all(tabs.map(tab =>
         browser.bookmarks.create({
           parentId: folder.id,
           title: tab.title,
           url: tab.url,
         }))));
+  },
+
+  getBookmark(id) {
+    return browser.bookmarks.get(id)
+      .then((result) => {
+        if (result && result.length) {
+          return result[0];
+        }
+        return null;
+      });
+  },
+
+  getBookmarks(folderId) {
+    return browser.bookmarks.getChildren(folderId);
   },
 };
 
