@@ -1,6 +1,6 @@
 const tabmarks = {
   mainPopupPort: null,
-  selectedGroupFolderId: null,
+  selectedGroupId: null,
   tabsWindowId: null,
 
   init() {
@@ -33,6 +33,9 @@ const tabmarks = {
         break;
       case 'createGroup':
         this.createGroup(message.groupName);
+        break;
+      case 'selectGroup':
+        this.selectGroup(message.groupId);
         break;
       default:
         console.error('Received unknown message:', message);
@@ -74,15 +77,26 @@ const tabmarks = {
     this.createBookmarkFolder(name)
       .then((folder) => {
         if (this.tabsWindowId) {
-          this.createTabBookmarks(folder, this.tabsWindowId);
+          return this.createTabBookmarks(folder, this.tabsWindowId)
+            .then(() => folder);
         }
-        this.updateSelectedGroupFolder(folder);
         return folder;
-      });
+      })
+      .then(folder => this.updateSelectedGroup(folder))
+      .then(() => this.loadGroups());
   },
 
-  updateSelectedGroupFolder(folder) {
-    this.selectedGroupFolderId = folder ? folder.id : null;
+  selectGroup(groupId) {
+    browser.bookmarks.get(groupId).then((folder) => {
+      if (folder && folder.length) {
+        this.updateSelectedGroup(folder[0]);
+      }
+    });
+  },
+
+  updateSelectedGroup(folder) {
+    this.selectedGroupId = folder ? folder.id : null;
+    browser.browserAction.setTitle({ title: folder ? `Tabmarks (${folder.title})` : 'Tabmarks' });
     browser.browserAction.setBadgeBackgroundColor({ color: '#666' });
     browser.browserAction.setBadgeText({
       text: folder ? folder.title : '',
@@ -112,15 +126,13 @@ const tabmarks = {
   },
 
   createTabBookmarks(folder, windowId) {
-    this.getTabs(windowId).then((tabs) => {
-      tabs.forEach((tab) => {
+    return this.getTabs(windowId).then(tabs =>
+      Promise.all(tabs.map(tab =>
         browser.bookmarks.create({
           parentId: folder.id,
           title: tab.title,
           url: tab.url,
-        });
-      });
-    });
+        }))));
   },
 };
 

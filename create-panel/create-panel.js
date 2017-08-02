@@ -1,8 +1,9 @@
 const createPanel = {
   init() {
-    document.addEventListener('load', () => this.nameField.focus());
+    window.addEventListener('load', () => this.nameField.focus());
     document.addEventListener('click', this.handleEvent.bind(this));
     document.addEventListener('submit', this.handleEvent.bind(this));
+    document.addEventListener('keydown', this.handleKeyDown.bind(this));
   },
 
   handleEvent(e) {
@@ -12,6 +13,12 @@ const createPanel = {
     } else if (e.target.classList.contains('tabmarks-create-panel-create') ||
                e.target.classList.contains('tabmarks-create-panel-form')) {
       this.createGroup();
+    }
+  },
+
+  handleKeyDown(e) {
+    if (e.key === 'Escape') {
+      this.closePanel();
     }
   },
 

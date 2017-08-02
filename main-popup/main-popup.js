@@ -14,8 +14,7 @@ const mainPopup = {
       this.createEmptyGroup();
     } else if (e.target.closest('.tabmarks-group-item')) {
       const groupId = e.target.closest('.tabmarks-group-item').dataset.groupId;
-      console.log('group clicked', groupId);
-      this.closePopup();
+      this.selectGroup(groupId);
     }
   },
 
@@ -33,13 +32,6 @@ const mainPopup = {
     window.close();
   },
 
-  createEmptyGroup() {
-    this.port.postMessage({
-      message: 'showCreatePanel',
-    });
-    this.closePopup();
-  },
-
   saveAsGroup() {
     browser.windows.getCurrent().then((currentWindow) => {
       this.port.postMessage({
@@ -48,6 +40,21 @@ const mainPopup = {
       });
       this.closePopup();
     });
+  },
+
+  createEmptyGroup() {
+    this.port.postMessage({
+      message: 'showCreatePanel',
+    });
+    this.closePopup();
+  },
+
+  selectGroup(groupId) {
+    this.port.postMessage({
+      message: 'selectGroup',
+      groupId,
+    });
+    this.closePopup();
   },
 
   updateGroupList(groups) {
