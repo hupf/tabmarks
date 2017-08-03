@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "web-ext run",
     "lint": "eslint .",
-    "build": "web-ext build",
+    "build": "web-ext build --ignore-files=package.json yarn.lock --overwrite-dest",
     "sign": "web-ext sign --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET"
   },
   "repository": {

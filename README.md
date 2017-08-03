@@ -3,7 +3,13 @@
 Web Extension for handling groups of tabs persisted as bookmarks.
 
 
-## Usage
+## Known issues
+
+* Only tested with Firefox.
+* Changes on the persisted bookmarks will not yet be synchronized with the open tabs.
+
+
+## Development (for Firefox)
 
 Install dependencies:
 
@@ -15,7 +21,11 @@ Open Firefox and load the extension temporarily in the browser:
 
 Linting:
 
-    yarn run lint
+    yarn lint
+
+Creating a ZIP file (will be put in `web-ext-artifacts/`):
+
+    yarn build
 
 
 ## Author
