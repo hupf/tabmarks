@@ -8,7 +8,7 @@ const main = {
     browser.runtime.onMessage.addListener(this.handleMessage.bind(this));
 
     browser.windows.onCreated.addListener(w => this.onWindowCreated(w.id));
-    browser.windows.onRemoved.addListener(this.onWindowRemoved.bind(this));
+    // browser.windows.onRemoved.addListener(this.onWindowRemoved.bind(this));
 
     this.loadGroups();
   },
@@ -46,12 +46,13 @@ const main = {
   },
 
   onWindowCreated(windowId) {
-    tm.groups.getSelectedGroupId(windowId).then(groupId => this.selectGroup(windowId, groupId));
+    tm.groups.getSelectedGroupId(windowId)
+      .then(groupId => this.selectGroup(windowId, groupId));
   },
 
-  onWindowRemoved(windowId) {
-    tm.groups.saveSelectedGroupId(windowId, null);
-  },
+  // onWindowRemoved(windowId) {
+  //   tm.groups.saveSelectedGroupId(windowId, null);
+  // },
 
   loadGroups() {
     return tm.groups.getAll().then((groups) => {

@@ -3,6 +3,19 @@ if (!window.tm) window.tm = {};
 tm.groups = {
   selectedGroupIds: null,
 
+  getAll() {
+    return tm.bookmarks.getRootFolder()
+      .then(rootFolder => rootFolder && browser.bookmarks.getChildren(rootFolder.id))
+      .then((groupFolders) => {
+        if (groupFolders) {
+          return groupFolders
+            .filter(f => !f.url)
+            .map(f => ({ id: f.id, name: f.title }));
+        }
+        return null;
+      });
+  },
+
   getSelectedGroupId(windowId) {
     return this.getSelectedGroupIds()
       .then(groupIds => Object.prototype.hasOwnProperty.call(groupIds, windowId) &&
@@ -33,17 +46,24 @@ tm.groups = {
       .then(groupId => tm.bookmarks.getFolder(groupId));
   },
 
-  getAll() {
-    return tm.bookmarks.getRootFolder()
-      .then(rootFolder => rootFolder && browser.bookmarks.getChildren(rootFolder.id))
-      .then((groupFolders) => {
-        if (groupFolders) {
-          return groupFolders
-            .filter(f => !f.url)
-            .map(f => ({ id: f.id, name: f.title }));
+  // TODO: test & use instead of OnWindowRemoved after browser start
+  cleanupSelectedGroupIds() {
+    Promise.all([
+      browser.windows.getAll({ windowTypes: ['normal'] }),
+      this.getSelectedGroupIds(),
+    ]).then(([windows, groupIds]) => {
+      const selectedGroupIds = Object.assign({}, groupIds);
+      const usedWindowIds = windows.map(w => w.id);
+      const storedWindowIds = Object.keys(groupIds);
+
+      storedWindowIds.forEach((id) => {
+        if (!usedWindowIds.contains(id)) {
+          delete selectedGroupIds[id];
         }
-        return null;
       });
+
+      return browser.storage.local.set({ selectedGroupIds });
+    });
   },
 
 };
