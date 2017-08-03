@@ -1,11 +1,47 @@
 if (!window.tm) window.tm = {};
 
+const DEFAULT_ROOT_FOLDER_NAME = 'Tabmarks Groups';
+
 tm.bookmarks = {
+  rootFolderName: null,
+
+  getRootFolderName() {
+    if (this.rootFolderName) {
+      return Promise.resolve(this.rootFolderName);
+    }
+
+    return browser.storage.local.get('rootFolderName')
+      .then(result => result.rootFolderName)
+      .then((rootFolderName) => {
+        if (!rootFolderName) {
+          this.rootFolderName = DEFAULT_ROOT_FOLDER_NAME;
+          return browser.storage.local.set({ rootFolderName: DEFAULT_ROOT_FOLDER_NAME })
+            .then(() => DEFAULT_ROOT_FOLDER_NAME);
+        }
+        this.rootFolderName = rootFolderName;
+        return rootFolderName;
+      });
+  },
+
+  renameRootFolder(name) {
+    return this.getRootFolder()
+      .then(folder => browser.bookmarks.update(folder.id, { title: name }))
+      .then((folder) => {
+        this.rootFolderName = name;
+        browser.storage.local.set({ rootFolderName: name });
+        return folder;
+      });
+  },
 
   getRootFolder() {
-    // TODO: make configurable
-    return browser.bookmarks.search({ title: 'Other Bookmarks' })
-      .then(result => result && result.length && result[0]);
+    return this.getRootFolderName().then(rootFolderName =>
+      browser.bookmarks.search({ title: rootFolderName })
+        .then((result) => {
+          if (result && result.length) {
+            return result[0];
+          }
+          return browser.bookmarks.create({ title: rootFolderName });
+        }));
   },
 
   getFolder(folderId) {

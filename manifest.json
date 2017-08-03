@@ -29,6 +29,10 @@
     "default_title": "Tabmarks",
     "default_popup": "main-popup/main-popup.html"
   },
+  "options_ui": {
+    "browser_style": true,
+    "page": "options/options.html"
+  },
   "web_accessible_resources": [
     "icons/tabmarks.svg"
   ]

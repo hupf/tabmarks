@@ -1,6 +1,7 @@
 const main = {
 
   mainPopupPort: null,
+  optionsPort: null,
   createGroupWindowId: null,
 
   init() {
@@ -15,9 +16,17 @@ const main = {
 
   handleConnect(port) {
     port.onMessage.addListener(this.handleMessage.bind(this));
-    if (port.name === 'mainPopup') {
-      this.mainPopupPort = port;
-      this.updateMainPopupGroupList();
+    switch (port.name) {
+      case 'mainPopup':
+        this.mainPopupPort = port;
+        this.updateMainPopupGroupList();
+        break;
+      case 'options':
+        this.optionsPort = port;
+        this.updateOptionsRootFolderName();
+        break;
+      default:
+        break;
     }
     port.onDisconnect.addListener(this.handleDisconnect.bind(this));
   },
@@ -103,6 +112,13 @@ const main = {
   updateMainPopupGroupList() {
     if (this.mainPopupPort) {
       this.mainPopupPort.postMessage({ message: 'updateGroupList', groups: this.groups });
+    }
+  },
+
+  updateOptionsRootFolderName() {
+    if (this.optionsPort) {
+      tm.bookmarks.getRootFolderName().then(rootFolderName =>
+        this.optionsPort.postMessage({ message: 'updateRootFolderName', rootFolderName }));
     }
   },
 
