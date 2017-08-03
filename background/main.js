@@ -8,7 +8,6 @@ const main = {
     browser.runtime.onMessage.addListener(this.handleMessage.bind(this));
 
     browser.windows.onCreated.addListener(w => this.onWindowCreated(w.id));
-    // browser.windows.onRemoved.addListener(this.onWindowRemoved.bind(this));
 
     this.loadGroups();
   },
@@ -51,12 +50,8 @@ const main = {
 
   onWindowCreated(windowId) {
     tm.groups.getSelectedGroupId(windowId)
-      .then(groupId => this.selectGroup(windowId, groupId));
+      .then(groupId => groupId && this.selectGroup(windowId, groupId));
   },
-
-  // onWindowRemoved(windowId) {
-  //   tm.groups.saveSelectedGroupId(windowId, null);
-  // },
 
   loadGroups() {
     return tm.groups.getAll().then((groups) => {
@@ -70,29 +65,29 @@ const main = {
   createGroup(windowId, name) {
     tm.bookmarks.createFolder(name).then((folder) => {
       // Create empty group with new tab (and close currently open tabs)
-      tm.tabs.openEmptyGroup(windowId);
+      tm.tabs.openEmptyGroup(windowId)
+        .then(() => this.updateSelectedGroup(windowId, folder.id));
 
-      // TODO: if no group is selected (first-time user), allow to create a group from
+      // TODO: if no group is selected (i.e. new window), allow to create a group from
       // the currently open tabs (requires second option in main popup)
 
-      this.updateSelectedGroup(windowId, folder.id);
       this.loadGroups();
     });
   },
 
-  selectGroup(windowId, groupId) {
+  selectGroup(windowId, groupId = null) {
     if (!groupId) {
       this.updateSelectedGroup(windowId, null);
       return;
     }
 
-    this.updateSelectedGroup(windowId, groupId).then(() =>
-      tm.tabs.openGroup(windowId, groupId));
+    tm.tabs.openGroup(windowId, groupId)
+      .then(() => this.updateSelectedGroup(windowId, groupId));
   },
 
   updateSelectedGroup(windowId, groupId) {
-    return tm.groups.saveSelectedGroupId(windowId, groupId).then(() =>
-      tm.ui.updateWindowBrowserActions(windowId, groupId));
+    tm.groups.saveSelectedGroupId(windowId, groupId);
+    tm.ui.updateWindowBrowserActions(windowId, groupId);
   },
 
   updateDefaultPopupGroupList() {
