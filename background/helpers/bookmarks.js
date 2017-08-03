@@ -93,13 +93,13 @@ tm.bookmarks = {
           parentId,
           title: tab.title,
           url: tab.url,
-          index: index != null ? index : tab.index,
+          index,
         }));
   },
 
-  updateFromTab(tab) {
+  updateFromTab(tab, index) {
     return this.getOfWindow(tab.windowId)
-      .then(bookmarks => bookmarks[tab.index])
+      .then(bookmarks => bookmarks[index])
       .then(bookmark => browser.bookmarks.update(bookmark.id, {
         title: tab.title,
         url: tab.url,
@@ -129,6 +129,11 @@ tm.bookmarks = {
           title: tab.title,
           url: tab.url,
         }))));
+  },
+
+  replaceWithTabsOfWindow(windowId, folder, excludeTabId) {
+    return tm.bookmarks.emptyFolder(folder.id)
+      .then(() => tm.bookmarks.saveTabsOfWindow(windowId, folder, excludeTabId));
   },
 
 };

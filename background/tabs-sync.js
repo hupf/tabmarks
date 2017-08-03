@@ -10,7 +10,6 @@ tm.tabsSync = {
     browser.tabs.onMoved.addListener(this.onMoved.bind(this));
     browser.tabs.onRemoved.addListener(this.onRemoved.bind(this));
     browser.tabs.onUpdated.addListener(this.onUpdated.bind(this));
-    // browser.tabs.onReplaced.addListener(this.onReplaced.bind(this));
   },
 
   onAttached(tabId, attachInfo) {
@@ -19,8 +18,10 @@ tm.tabsSync = {
     tm.groups.getSelectedGroupId(attachInfo.newWindowId).then((groupId) => {
       if (!groupId) return;
 
-      tm.tabs.get(tabId).then(tab => tm.bookmarks.createFromTab(tab, attachInfo.newPosition));
-      // TODO: update browserAction
+      tm.tabs.transformIndex(attachInfo.newPosition, attachInfo.newWindowId)
+        .then(newPosition =>
+          tm.tabs.get(tabId).then(tab => tm.bookmarks.createFromTab(tab, newPosition)));
+      // TODO: update tab's browserAction
     });
   },
 
@@ -30,8 +31,9 @@ tm.tabsSync = {
     tm.groups.getSelectedGroupId(detachInfo.oldWindowId).then((groupId) => {
       if (!groupId) return;
 
-      tm.bookmarks.removeAtIndex(groupId, detachInfo.oldPosition);
-      // TODO: update browserAction
+      tm.tabs.transformIndex(detachInfo.oldPosition, detachInfo.oldWindowId)
+        .then(oldPosition => tm.bookmarks.removeAtIndex(groupId, oldPosition));
+      // TODO: update tab's browserAction
     });
   },
 
@@ -44,49 +46,71 @@ tm.tabsSync = {
   onMoved(tabId, moveInfo) {
     if (this.disabled) return;
 
-    tm.bookmarks.moveInSelectedGroup(moveInfo.windowId, moveInfo.fromIndex, moveInfo.toIndex);
+    tm.tabs.transformIndex([moveInfo.fromIndex, moveInfo.toIndex], moveInfo.windowId)
+      .then(([fromIndex, toIndex]) =>
+        tm.bookmarks.moveInSelectedGroup(moveInfo.windowId, fromIndex, toIndex));
   },
 
   onRemoved(tabId, removeInfo) {
     if (this.disabled || removeInfo.isWindowClosing) return;
 
-    tm.groups.getSelectedGroupFolder(removeInfo.windowId)
-      .then((folder) => {
-        if (!folder) return;
-
-        tm.bookmarks.emptyFolder(folder.id)
-          .then(() => tm.bookmarks.saveTabsOfWindow(removeInfo.windowId, folder, tabId));
-      });
+    this.replaceAll(removeInfo.windowId, tabId);
   },
 
   onUpdated(tabId, changeInfo, tab) {
     if (this.disabled) return;
 
-    // TODO: what about pinned tabs?
     if (Object.prototype.hasOwnProperty.call(changeInfo, 'status') && changeInfo.status === 'complete') {
-      tm.groups.getSelectedGroupId(tab.windowId).then((groupId) => {
-        if (!groupId) return;
-
-        Promise.all([tm.tabs.getOfWindow(tab.windowId), tm.bookmarks.getOfWindow(tab.windowId)])
-          .then(([tabs, bookmarks]) => this.createOrUpdate(tab, tabs, bookmarks));
-      });
+      this.onComplete(tab);
+    } else if (Object.prototype.hasOwnProperty.call(changeInfo, 'pinned')) {
+      this.onPinnedChange(tab);
     }
   },
 
-  // onReplaced(addedTabId, removedTabId) {
-  //   if (this.disabled) return;
-  //
-  //   console.log('onReplaced', addedTabId, removedTabId);
-  // },
+  onComplete(tab) {
+    if (tab.status !== 'complete') return;
+
+    tm.groups.getSelectedGroupId(tab.windowId).then((groupId) => {
+      if (!groupId) return;
+
+      Promise.all([tm.tabs.getOfWindow(tab.windowId), tm.bookmarks.getOfWindow(tab.windowId)])
+        .then(([tabs, bookmarks]) => this.createOrUpdate(tab, tabs, bookmarks));
+    });
+  },
+
+  onPinnedChange(tab) {
+    tm.groups.getSelectedGroupId(tab.windowId).then((groupId) => {
+      if (!groupId) return;
+
+      if (tab.pinned) {
+        this.replaceAll(tab.windowId, tab.id);
+      } else {
+        tm.tabs.transformIndex(tab.index, tab.windowId)
+          .then(index => tm.bookmarks.createFromTab(tab, index));
+      }
+    });
+  },
 
   createOrUpdate(tab, tabs, bookmarks) {
-    if (bookmarks != null) {
-      if (tabs.length > bookmarks.length) {
-        tm.bookmarks.createFromTab(tab);
-      } else {
-        tm.bookmarks.updateFromTab(tab);
-      }
-    }
+    if (bookmarks == null) return;
+
+    tm.tabs.transformIndex(tab.index, tab.windowId)
+      .then((index) => {
+        if (tabs.length > bookmarks.length) {
+          tm.bookmarks.createFromTab(tab, index);
+        } else {
+          tm.bookmarks.updateFromTab(tab, index);
+        }
+      });
+  },
+
+  replaceAll(windowId, excludeTabId) {
+    tm.groups.getSelectedGroupFolder(windowId)
+      .then((folder) => {
+        if (!folder) return;
+
+        tm.bookmarks.replaceWithTabsOfWindow(windowId, folder, excludeTabId);
+      });
   },
 
 };

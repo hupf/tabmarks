@@ -17,6 +17,18 @@ tm.tabs = {
       .then(tabs => tabs.filter(t => t.url !== 'about:newtab' && t.url !== 'about:blank'));
   },
 
+  transformIndex(indexOrIndices, windowId) {
+    // The tab.index contains pinned tabs, exclude them to be able to compare with bookmark indices
+    return this.getOfWindow(windowId, { pinned: true })
+      .then(pinnedTabs => pinnedTabs.length)
+      .then((offset) => {
+        if (Array.isArray(indexOrIndices)) {
+          return indexOrIndices.map(i => i - offset);
+        }
+        return indexOrIndices - offset;
+      });
+  },
+
   openGroup(windowId, groupId) {
     return this.getOfWindow(windowId)
       .then(tabs => tabs.map(t => t.id))
