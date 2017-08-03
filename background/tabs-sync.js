@@ -48,11 +48,15 @@ tm.tabsSync = {
   },
 
   onRemoved(tabId, removeInfo) {
-    if (this.disabled) return;
+    if (this.disabled || removeInfo.isWindowClosing) return;
 
-    tm.groups.getSelectedGroupFolder(removeInfo.windowId).then(folder =>
-      folder && tm.bookmarks.emptyFolder(folder.id)
-        .then(() => tm.bookmarks.saveTabsOfWindow(removeInfo.windowId, folder)));
+    tm.groups.getSelectedGroupFolder(removeInfo.windowId)
+      .then((folder) => {
+        if (!folder) return;
+
+        tm.bookmarks.emptyFolder(folder.id)
+          .then(() => tm.bookmarks.saveTabsOfWindow(removeInfo.windowId, folder, tabId));
+      });
   },
 
   onUpdated(tabId, changeInfo, tab) {
