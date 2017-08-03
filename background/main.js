@@ -1,8 +1,7 @@
 const main = {
 
-  mainPopupPort: null,
+  defaultPopupPort: null,
   optionsPort: null,
-  createGroupWindowId: null,
 
   init() {
     browser.runtime.onConnect.addListener(this.handleConnect.bind(this));
@@ -17,9 +16,9 @@ const main = {
   handleConnect(port) {
     port.onMessage.addListener(this.handleMessage.bind(this));
     switch (port.name) {
-      case 'mainPopup':
-        this.mainPopupPort = port;
-        this.updateMainPopupGroupList();
+      case 'defaultPopup':
+        this.defaultPopupPort = port;
+        this.updateDefaultPopupGroupList();
         break;
       case 'options':
         this.optionsPort = port;
@@ -32,19 +31,15 @@ const main = {
   },
 
   handleDisconnect(port) {
-    if (port.name === 'mainPopup') {
-      this.mainPopupPort = null;
+    if (port.name === 'defaultPopup') {
+      this.defaultPopupPort = null;
     }
   },
 
   handleMessage(message) {
     switch (message.message) {
-      case 'showCreatePanel':
-        this.createGroupWindowId = message.windowId;
-        this.showCreatePanel();
-        break;
       case 'createGroup':
-        this.createGroup(this.createGroupWindowId, message.groupName);
+        this.createGroup(message.windowId, message.groupName);
         break;
       case 'selectGroup':
         this.selectGroup(message.windowId, message.groupId);
@@ -67,17 +62,8 @@ const main = {
     return tm.groups.getAll().then((groups) => {
       if (groups) {
         this.groups = groups;
-        this.updateMainPopupGroupList();
+        this.updateDefaultPopupGroupList();
       }
-    });
-  },
-
-  showCreatePanel() {
-    return browser.windows.create({
-      type: 'panel',
-      url: browser.extension.getURL('create-panel/create-panel.html'),
-      width: 500,
-      height: 97,
     });
   },
 
@@ -109,9 +95,9 @@ const main = {
       tm.ui.updateWindowBrowserActions(windowId, groupId));
   },
 
-  updateMainPopupGroupList() {
-    if (this.mainPopupPort) {
-      this.mainPopupPort.postMessage({ message: 'updateGroupList', groups: this.groups });
+  updateDefaultPopupGroupList() {
+    if (this.defaultPopupPort) {
+      this.defaultPopupPort.postMessage({ message: 'updateGroupList', groups: this.groups });
     }
   },
 

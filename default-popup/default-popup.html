@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="default-popup.css"/>
+  </head>
+
+  <body>
+    <div class="panel tabmarks-default-popup">
+      <div class="panel-section panel-section-header">
+        <div class="icon-section-header"></div>
+        <div class="text-section-header">Tabmarks</div>
+      </div>
+      <div class="panel-section panel-section-list">
+        <div class="panel-list-item tabmarks-show-create-form">
+          <div class="icon"></div>
+          <div class="text">Create empty group</div>
+          <div class="text-shortcut"></div>
+        </div>
+        <div class="panel-section-separator"></div>
+        <div id="group-list"></div>
+      </div>
+    </div>
+
+    <template id="group">
+      <div class="panel-list-item tabmarks-group-item">
+        <div class="icon"></div>
+        <div class="text"></div>
+        <div class="text-shortcut"></div>
+      </div>
+    </template>
+
+    <form class="tabmarks-create-form" style="display: none;">
+      <div class="panel">
+        <div class="panel-section panel-section-formElements">
+          <div class="panel-formElements-item">
+            <label for="groupName">Name:</label>
+            <input type="text" value="" id="groupName" />
+          </div>
+        </div>
+        <div class="panel-section panel-section-footer">
+          <div class="panel-section-footer-button tabmarks-create-form-cancel">Cancel</div>
+          <div class="panel-section-footer-separator"></div>
+          <div class="panel-section-footer-button default tabmarks-create-form-create">Create group</div>
+        </div>
+      </div>
+    </form>
+
+    <script src="default-popup.js"></script>
+  </body>
+
+</html>

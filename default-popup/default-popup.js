@@ -1,18 +1,25 @@
-const mainPopup = {
+const defaultPopup = {
   port: null,
 
   init() {
-    document.addEventListener('click', this.handleClick.bind(this));
-    this.port = browser.runtime.connect({ name: 'mainPopup' });
+    document.addEventListener('click', this.handleEvent.bind(this));
+    document.addEventListener('submit', this.handleEvent.bind(this));
+    this.port = browser.runtime.connect({ name: 'defaultPopup' });
     this.port.onMessage.addListener(this.handleMessage.bind(this));
   },
 
-  handleClick(e) {
-    if (e.target.closest('.tabmarks-create-group')) {
-      this.createGroup();
+  handleEvent(e) {
+    if (e.target.closest('.tabmarks-show-create-form')) {
+      this.showCreateForm();
     } else if (e.target.closest('.tabmarks-group-item')) {
       const groupId = e.target.closest('.tabmarks-group-item').dataset.groupId;
       this.selectGroup(groupId);
+    } else if (e.target.classList.contains('tabmarks-create-form-cancel')) {
+      this.closePopup();
+    } else if (e.target.classList.contains('tabmarks-create-form-create') ||
+               e.target.classList.contains('tabmarks-create-form')) {
+      e.preventDefault();
+      this.createGroup();
     }
   },
 
@@ -30,10 +37,30 @@ const mainPopup = {
     window.close();
   },
 
+  get defaultPopup() {
+    return document.querySelector('.tabmarks-default-popup');
+  },
+
+  get createForm() {
+    return document.querySelector('.tabmarks-create-form');
+  },
+
+  get nameField() {
+    return document.getElementById('groupName');
+  },
+
+  showCreateForm() {
+    this.defaultPopup.style.display = 'none';
+    this.createForm.style.display = '';
+    this.nameField.value = '';
+    this.nameField.focus();
+  },
+
   createGroup() {
     this.getCurrentWindowId().then((windowId) => {
-      this.port.postMessage({
-        message: 'showCreatePanel',
+      browser.runtime.sendMessage({
+        message: 'createGroup',
+        groupName: this.nameField.value,
         windowId,
       });
       this.closePopup();
@@ -78,4 +105,4 @@ const mainPopup = {
   },
 };
 
-mainPopup.init();
+defaultPopup.init();

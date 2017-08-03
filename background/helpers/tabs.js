@@ -6,9 +6,9 @@ tm.tabs = {
     return browser.tabs.get(tabId);
   },
 
-  getOfWindow(windowId) {
+  getOfWindow(windowId, filter = { pinned: false }) {
     return new Promise((resolve) => {
-      browser.tabs.query({ windowId, pinned: false }, resolve);
+      browser.tabs.query(Object.assign({ windowId }, filter), resolve);
     });
   },
 

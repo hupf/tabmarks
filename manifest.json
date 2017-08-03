@@ -27,7 +27,7 @@
     "browser_style": true,
     "default_icon": "icons/tabmarks.svg",
     "default_title": "Tabmarks",
-    "default_popup": "main-popup/main-popup.html"
+    "default_popup": "default-popup/default-popup.html"
   },
   "options_ui": {
     "browser_style": true,
