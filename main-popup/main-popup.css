@@ -1,3 +1,8 @@
 .panel-list-item {
   white-space: nowrap;
 }
+
+.icon-section-header {
+  background-image: url(../icons/tabmarks.svg);
+  background-size: contain;
+}
