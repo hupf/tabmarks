@@ -7,9 +7,10 @@ const main = {
     browser.runtime.onConnect.addListener(this.handleConnect.bind(this));
     browser.runtime.onMessage.addListener(this.handleMessage.bind(this));
 
-    browser.windows.onCreated.addListener(w => this.onWindowCreated(w.id));
+    browser.onCreated.addListener(w => this.onWindowCreated(w.id));
 
-    this.loadGroups();
+    this.initWindows()
+      .then(() => this.loadGroups());
   },
 
   handleConnect(port) {
@@ -51,6 +52,26 @@ const main = {
   onWindowCreated(windowId) {
     tm.groups.getSelectedGroupId(windowId)
       .then(groupId => groupId && this.selectGroup(windowId, groupId));
+  },
+
+  initWindows() {
+    return browser.windows.getAll()
+      .then(windows => windows.map(w => w.id))
+      .then(windowIds => Promise.all(windowIds.map(windowId =>
+        this.initWindow(windowId))));
+  },
+
+  initWindow(windowId) {
+    return Promise.all([tm.groups.getSelectedGroupId(windowId),
+      tm.tabs.getNonEmptyOfWindow(windowId)])
+        .then(([groupId, tabs]) => {
+          if (tabs.length === 0) {
+            // Browser opens new tab on startup
+            return this.selectGroup(windowId, groupId);
+          }
+          // Browser is set up to open tabs from last session
+          return this.updateSelectedGroup(windowId, groupId);
+        });
   },
 
   loadGroups() {
