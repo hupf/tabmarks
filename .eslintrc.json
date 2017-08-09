@@ -7,6 +7,9 @@
   "extends": [
     "airbnb-base"
   ],
+  "rules": {
+    "no-console": ["warn", { "allow": ["error"] }]
+  },
   "globals": {
     "tm": true
   }
