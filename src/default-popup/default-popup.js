@@ -1,4 +1,5 @@
 const defaultPopup = {
+
   port: null,
   selectedGroupId: null,
   saveTabs: null,
@@ -18,6 +19,8 @@ const defaultPopup = {
       this.showCreateForm(true);
     } else if (e.target.closest('.tabmarks-create-empty-link')) {
       this.showCreateForm();
+    } else if (e.target.closest('.tabmarks-preferences-link')) {
+      this.showPreferences();
     } else if (e.target.closest('.tabmarks-group-item')) {
       const groupId = e.target.closest('.tabmarks-group-item').dataset.groupId;
       this.selectGroup(groupId);
@@ -47,42 +50,9 @@ const defaultPopup = {
     window.close();
   },
 
-  get groupNodes() {
-    return document.querySelectorAll('.tabmarks-group-item');
-  },
-
-  get activeGroupNode() {
-    if (!this.selectedGroupId) return null;
-
-    return document.querySelector(`.tabmarks-group-item[data-group-id="${this.selectedGroupId}"]`);
-  },
-
-  get closeGroupLink() {
-    return document.querySelector('.tabmarks-close-group-link');
-  },
-
-  get createFromTabsLink() {
-    return document.querySelector('.tabmarks-create-from-tabs-link');
-  },
-
-  get createEmptyLink() {
-    return document.querySelector('.tabmarks-create-empty-link');
-  },
-
-  get defaultPopupNode() {
-    return document.querySelector('.tabmarks-default-popup');
-  },
-
-  get createFormNode() {
-    return document.querySelector('.tabmarks-create-form');
-  },
-
-  get nameField() {
-    return document.querySelector('.tabmarks-create-form-group-name');
-  },
-
-  get createEmptyWarningNode() {
-    return document.querySelector('.tabmarks-create-empty-warning');
+  showPreferences() {
+    browser.runtime.openOptionsPage();
+    this.closePopup();
   },
 
   showCreateForm(saveTabs = false) {
@@ -92,8 +62,8 @@ const defaultPopup = {
     this.defaultPopupNode.style.display = 'none';
     this.createFormNode.style.display = '';
 
-    this.nameField.value = '';
-    this.nameField.focus();
+    this.nameInput.value = '';
+    this.nameInput.focus();
   },
 
   createGroup() {
@@ -101,7 +71,7 @@ const defaultPopup = {
       browser.runtime.sendMessage({
         message: 'createGroup',
         windowId,
-        groupName: this.nameField.value,
+        groupName: this.nameInput.value,
         saveTabs: this.saveTabs,
       });
       this.closePopup();
@@ -162,6 +132,41 @@ const defaultPopup = {
   getCurrentWindowId() {
     return browser.windows.getCurrent().then(w => w.id);
   },
+
+  get groupNodes() {
+    return document.querySelectorAll('.tabmarks-group-item');
+  },
+
+  get activeGroupNode() {
+    if (!this.selectedGroupId) return null;
+
+    return document.querySelector(`.tabmarks-group-item[data-group-id="${this.selectedGroupId}"]`);
+  },
+
+  get closeGroupLink() {
+    return document.querySelector('.tabmarks-close-group-link');
+  },
+
+  get createFromTabsLink() {
+    return document.querySelector('.tabmarks-create-from-tabs-link');
+  },
+
+  get defaultPopupNode() {
+    return document.querySelector('.tabmarks-default-popup');
+  },
+
+  get createFormNode() {
+    return document.querySelector('.tabmarks-create-form');
+  },
+
+  get nameInput() {
+    return document.querySelector('.tabmarks-create-form-group-name');
+  },
+
+  get createEmptyWarningNode() {
+    return document.querySelector('.tabmarks-create-empty-warning');
+  },
+
 };
 
 defaultPopup.init();

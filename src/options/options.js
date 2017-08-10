@@ -48,6 +48,13 @@ const options = {
     tm.bookmarks.renameRootFolder(name);
   },
 
+  editName(enabled) {
+    this.nameInput.disabled = !enabled;
+    this.nameEditButton.style.display = enabled ? 'none' : '';
+    this.nameCancelButton.style.display = enabled ? '' : 'none';
+    this.nameSaveButton.style.display = enabled ? '' : 'none';
+  },
+
   get nameInput() {
     return document.querySelector('#rootFolderName');
   },
@@ -62,13 +69,6 @@ const options = {
 
   get nameSaveButton() {
     return document.querySelector('#nameSaveButton');
-  },
-
-  editName(enabled) {
-    this.nameInput.disabled = !enabled;
-    this.nameEditButton.style.display = enabled ? 'none' : '';
-    this.nameCancelButton.style.display = enabled ? '' : 'none';
-    this.nameSaveButton.style.display = enabled ? '' : 'none';
   },
 
 };
