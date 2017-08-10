@@ -4,7 +4,7 @@ html, body {
 }
 
 .icon-section-header {
-  background-image: url(../icons/tabmarks.svg);
+  background-image: url(../../assets/icons/tabmarks.svg);
   background-size: contain;
 }
 

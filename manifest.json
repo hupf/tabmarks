@@ -12,7 +12,7 @@
   "homepage_url": "https://github.com/hupf/tabmarks",
   "author": "Mathis Hofer",
   "icons": {
-    "48": "icons/tabmarks.svg"
+    "48": "assets/icons/tabmarks.svg"
   },
   "permissions": [
     "bookmarks",
@@ -21,25 +21,25 @@
   ],
   "background": {
     "scripts": [
-      "background/helpers/bookmarks.js",
-      "background/helpers/groups.js",
-      "background/helpers/tabs.js",
-      "background/helpers/ui.js",
-      "background/main.js",
-      "background/tabs-sync.js"
+      "src/background/helpers/bookmarks.js",
+      "src/background/helpers/groups.js",
+      "src/background/helpers/tabs.js",
+      "src/background/helpers/ui.js",
+      "src/background/main.js",
+      "src/background/tabs-sync.js"
     ]
   },
   "browser_action": {
     "browser_style": true,
-    "default_icon": "icons/tabmarks.svg",
+    "default_icon": "assets/icons/tabmarks.svg",
     "default_title": "Tabmarks",
-    "default_popup": "default-popup/default-popup.html"
+    "default_popup": "src/default-popup/default-popup.html"
   },
   "options_ui": {
     "browser_style": true,
-    "page": "options/options.html"
+    "page": "src/options/options.html"
   },
   "web_accessible_resources": [
-    "icons/tabmarks.svg"
+    "assets/icons/tabmarks.svg"
   ]
 }
