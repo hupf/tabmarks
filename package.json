@@ -22,9 +22,9 @@
   "homepage": "https://github.com/hupf/tabmarks#readme",
   "dependencies": {},
   "devDependencies": {
-    "eslint": "^4.3.0",
+    "eslint": "^4.4.1",
     "eslint-config-airbnb-base": "^11.3.1",
     "eslint-plugin-import": "^2.7.0",
-    "web-ext": "^1.10.1"
+    "web-ext": "^2.0.0"
   }
 }
