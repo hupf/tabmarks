@@ -7,7 +7,7 @@ const main = {
     browser.runtime.onConnect.addListener(this.handleConnect.bind(this));
     browser.runtime.onMessage.addListener(this.handleMessage.bind(this));
 
-    browser.onCreated.addListener(w => this.onWindowCreated(w.id));
+    browser.windows.onCreated.addListener(w => this.initWindow(w.id));
 
     this.initWindows()
       .then(() => this.loadGroups());
@@ -18,6 +18,7 @@ const main = {
     switch (port.name) {
       case 'defaultPopup':
         this.defaultPopupPort = port;
+        this.updateDefaultPopupSelectedGroup();
         this.updateDefaultPopupGroupList();
         break;
       case 'options':
@@ -39,7 +40,7 @@ const main = {
   handleMessage(message) {
     switch (message.message) {
       case 'createGroup':
-        this.createGroup(message.windowId, message.groupName);
+        this.createGroup(message.windowId, message.groupName, message.saveTabs);
         break;
       case 'selectGroup':
         this.selectGroup(message.windowId, message.groupId);
@@ -47,11 +48,6 @@ const main = {
       default:
         console.error('Received unknown message:', message);
     }
-  },
-
-  onWindowCreated(windowId) {
-    tm.groups.getSelectedGroupId(windowId)
-      .then(groupId => groupId && this.selectGroup(windowId, groupId));
   },
 
   initWindows() {
@@ -83,14 +79,17 @@ const main = {
     });
   },
 
-  createGroup(windowId, name) {
+  createGroup(windowId, name, saveTabs) {
     tm.bookmarks.createFolder(name).then((folder) => {
-      // Create empty group with new tab (and close currently open tabs)
-      tm.tabs.openEmptyGroup(windowId)
-        .then(() => this.updateSelectedGroup(windowId, folder.id));
-
-      // TODO: if no group is selected (i.e. new window), allow to create a group from
-      // the currently open tabs (requires second option in main popup)
+      let promise;
+      if (saveTabs) {
+        // Create group from currently open tabs
+        promise = tm.bookmarks.saveTabsOfWindow(windowId, folder);
+      } else {
+        // Create empty group with new tab (and close currently open tabs)
+        promise = tm.tabs.openEmptyGroup(windowId);
+      }
+      promise.then(() => this.updateSelectedGroup(windowId, folder.id));
 
       this.loadGroups();
     });
@@ -98,7 +97,8 @@ const main = {
 
   selectGroup(windowId, groupId = null) {
     if (!groupId) {
-      this.updateSelectedGroup(windowId, null);
+      tm.tabs.openEmptyGroup(windowId)
+        .then(() => this.updateSelectedGroup(windowId, null));
       return;
     }
 
@@ -111,17 +111,31 @@ const main = {
     tm.ui.updateWindowBrowserActions(windowId, groupId);
   },
 
+  updateDefaultPopupSelectedGroup() {
+    if (!this.defaultPopupPort) return;
+
+    browser.windows.getCurrent().then(w => w.id)
+      .then(windowId => tm.groups.getSelectedGroupId(windowId))
+      .then((groupId) => {
+        this.defaultPopupPort.postMessage({
+          message: 'updateSelectedGroup',
+          groupId,
+        });
+      });
+  },
+
+
   updateDefaultPopupGroupList() {
-    if (this.defaultPopupPort) {
-      this.defaultPopupPort.postMessage({ message: 'updateGroupList', groups: this.groups });
-    }
+    if (!this.defaultPopupPort) return;
+
+    this.defaultPopupPort.postMessage({ message: 'updateGroupList', groups: this.groups });
   },
 
   updateOptionsRootFolderName() {
-    if (this.optionsPort) {
-      tm.bookmarks.getRootFolderName().then(rootFolderName =>
-        this.optionsPort.postMessage({ message: 'updateRootFolderName', rootFolderName }));
-    }
+    if (!this.optionsPort) return;
+
+    tm.bookmarks.getRootFolderName().then(rootFolderName =>
+      this.optionsPort.postMessage({ message: 'updateRootFolderName', rootFolderName }));
   },
 
 };

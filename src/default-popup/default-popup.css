@@ -11,3 +11,7 @@ html, body {
 .panel-list-item {
   white-space: nowrap;
 }
+
+.tabmarks-create-empty-warning {
+  color: #d92015;
+}

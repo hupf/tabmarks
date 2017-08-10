@@ -48,19 +48,19 @@ tm.tabs = {
   },
 
   openEmptyGroup(windowId) {
-    return tm.tabs.getOfWindow(windowId)
+    return this.getOfWindow(windowId)
       .then(tabs => tabs.map(t => t.id))
       .then((previousTabIds) => {
         this.disableSync();
-        return tm.tabs.open(null, true)
-          .then(() => tm.tabs.close(previousTabIds))
+        return this.open(null, true)
+          .then(() => this.close(previousTabIds))
           .then(this.enableSync, this.enableSync);
       });
   },
 
   open(bookmark, active) {
     return browser.tabs.create({
-      url: bookmark && bookmark.url,
+      url: bookmark ? bookmark.url : 'about:blank',
       active,
     });
   },

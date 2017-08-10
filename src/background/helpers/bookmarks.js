@@ -120,7 +120,7 @@ tm.bookmarks = {
           .then(bookmark => browser.bookmarks.move(bookmark.id, { parentId, index: toIndex })));
   },
 
-  saveTabsOfWindow(windowId, folder, excludeTabId) {
+  saveTabsOfWindow(windowId, folder, excludeTabId = null) {
     return tm.tabs.getNonEmptyOfWindow(windowId)
       .then(tabs => tabs.filter(t => t.id !== excludeTabId))
       .then(tabs => Promise.all(tabs.map(tab =>
