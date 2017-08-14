@@ -8,7 +8,8 @@ Web Extension for handling groups of tabs persisted as bookmarks.
 ## Known issues
 
 * Only tested with Firefox.
-* Changes on the persisted bookmarks will not yet be synchronized with the open tabs.
+* No i18n support (currently english only)
+* Changes to the persisted bookmarks will not yet be synchronized with the open tabs.
 
 
 ## Development (for Firefox)
