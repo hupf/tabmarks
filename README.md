@@ -2,6 +2,8 @@
 
 Web Extension for handling groups of tabs persisted as bookmarks.
 
+[![Build Status](https://travis-ci.org/hupf/tabmarks.svg?branch=master)](https://travis-ci.org/hupf/tabmarks)
+
 
 ## Known issues
 
