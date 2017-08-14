@@ -60,14 +60,14 @@ const main = {
   initWindow(windowId) {
     return Promise.all([tm.groups.getSelectedGroupId(windowId),
       tm.tabs.getRelevantOfWindow(windowId)])
-        .then(([groupId, tabs]) => {
-          if (tabs.length === 0) {
-            // Browser opens new tab on startup
-            return this.selectGroup(windowId, groupId);
-          }
-          // Browser is set up to open tabs from last session
-          return this.updateSelectedGroup(windowId, groupId);
-        });
+      .then(([groupId, tabs]) => {
+        if (tabs.length === 0) {
+          // Browser opens new tab on startup
+          return this.selectGroup(windowId, groupId);
+        }
+        // Browser is set up to open tabs from last session
+        return this.updateSelectedGroup(windowId, groupId);
+      });
   },
 
   loadGroups() {

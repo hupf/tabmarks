@@ -11,10 +11,10 @@ describe('tm.tabs', () => {
     });
 
     test('returns tab with given id', () =>
-         tm.tabs.get(5).then((result) => {
-           expect(browser.tabs.get).toBeCalledWith(5);
-           expect(result.id).toEqual(5);
-         }));
+      tm.tabs.get(5).then((result) => {
+        expect(browser.tabs.get).toBeCalledWith(5);
+        expect(result.id).toEqual(5);
+      }));
   });
 
   describe('#getOfWindow', () => {
@@ -32,13 +32,13 @@ describe('tm.tabs', () => {
     });
 
     test('returns tabs with given windowId excluding pinned ones', () =>
-         tm.tabs.getOfWindow(5).then((result) => {
-           expect(browser.tabs.query.mock.calls[0][0]).toEqual({ windowId: 5, pinned: false });
-           expect(result).toEqual([
-             { url: 'http://example.org' },
-             { url: 'about:blank' },
-           ]);
-         }));
+      tm.tabs.getOfWindow(5).then((result) => {
+        expect(browser.tabs.query.mock.calls[0][0]).toEqual({ windowId: 5, pinned: false });
+        expect(result).toEqual([
+          { url: 'http://example.org' },
+          { url: 'about:blank' },
+        ]);
+      }));
   });
 
   describe('#getRelevantOfWindow', () => {
@@ -56,12 +56,12 @@ describe('tm.tabs', () => {
     });
 
     test('returns tabs with given windowId excluding pinned ones and about:*', () =>
-         tm.tabs.getRelevantOfWindow(5).then((result) => {
-           expect(browser.tabs.query.mock.calls[0][0]).toEqual({ windowId: 5, pinned: false });
-           expect(result).toEqual([
-             { url: 'http://example.org' },
-           ]);
-         }));
+      tm.tabs.getRelevantOfWindow(5).then((result) => {
+        expect(browser.tabs.query.mock.calls[0][0]).toEqual({ windowId: 5, pinned: false });
+        expect(result).toEqual([
+          { url: 'http://example.org' },
+        ]);
+      }));
   });
 
   describe('#transformIndex', () => {
