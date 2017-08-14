@@ -5,10 +5,15 @@ tm.ui = {
   updateWindowBrowserActions(windowId, groupId) {
     Promise.all([tm.bookmarks.getFolder(groupId), tm.tabs.getOfWindow(windowId, {})])
       .then(([folder, tabs]) =>
-        tabs.forEach(tab => this.updateTabBrowserAction(tab, folder)));
+        tabs.forEach(tab => this.updateTabBrowserActionForFolder(tab, folder)));
   },
 
-  updateTabBrowserAction(tab, folder) {
+  updateTabBrowserAction(tab) {
+    tm.groups.getSelectedGroupFolder(tab.windowId)
+      .then(folder => this.updateTabBrowserActionForFolder(tab, folder));
+  },
+
+  updateTabBrowserActionForFolder(tab, folder) {
     browser.browserAction.setBadgeBackgroundColor({ color: '#666' });
     browser.browserAction.setTitle({
       title: folder ? `Tabmarks (${folder.title})` : 'Tabmarks',
@@ -18,11 +23,6 @@ tm.ui = {
       text: folder ? folder.title : '',
       tabId: tab.id,
     });
-  },
-
-  updateTabBrowserActionByWindowId(tab) {
-    tm.groups.getSelectedGroupFolder(tab.windowId)
-      .then(folder => this.updateTabBrowserAction(tab, folder));
   },
 
 };

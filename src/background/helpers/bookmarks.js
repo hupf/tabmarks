@@ -113,6 +113,7 @@ tm.bookmarks = {
   },
 
   moveInSelectedGroup(windowId, fromIndex, toIndex) {
+    if (fromIndex == null || toIndex == null) return Promise.resolve(false);
     return tm.groups.getSelectedGroupId(windowId)
       .then(parentId =>
         parentId && this.getChildren(parentId)
@@ -121,14 +122,16 @@ tm.bookmarks = {
   },
 
   saveTabsOfWindow(windowId, folder, excludeTabId = null) {
-    return tm.tabs.getNonEmptyOfWindow(windowId)
+    return tm.tabs.getRelevantOfWindow(windowId)
       .then(tabs => tabs.filter(t => t.id !== excludeTabId))
-      .then(tabs => Promise.all(tabs.map(tab =>
-        browser.bookmarks.create({
+      // Save bookmarks on-by-one due to problems with index
+      .then(tabs => tabs.reduce((result, tab, index) =>
+        result.then(() => browser.bookmarks.create({
           parentId: folder.id,
           title: tab.title,
           url: tab.url,
-        }))));
+          index,
+        })), Promise.resolve()));
   },
 
   replaceWithTabsOfWindow(windowId, folder, excludeTabId) {

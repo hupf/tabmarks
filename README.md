@@ -23,6 +23,10 @@ Linting:
 
     yarn lint
 
+Testing:
+
+    yarn test
+
 Creating a ZIP file (will be put in `web-ext-artifacts/`):
 
     yarn build

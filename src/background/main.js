@@ -59,7 +59,7 @@ const main = {
 
   initWindow(windowId) {
     return Promise.all([tm.groups.getSelectedGroupId(windowId),
-      tm.tabs.getNonEmptyOfWindow(windowId)])
+      tm.tabs.getRelevantOfWindow(windowId)])
         .then(([groupId, tabs]) => {
           if (tabs.length === 0) {
             // Browser opens new tab on startup

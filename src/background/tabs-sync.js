@@ -19,9 +19,10 @@ tm.tabsSync = {
       if (!groupId) return;
 
       tm.tabs.transformIndex(attachInfo.newPosition, attachInfo.newWindowId)
-        .then(newPosition =>
-          tm.tabs.get(tabId).then(tab => tm.bookmarks.createFromTab(tab, newPosition)));
-      // TODO: update tab's browserAction
+        .then(newPosition => tm.tabs.get(tabId).then((tab) => {
+          tm.bookmarks.createFromTab(tab, newPosition);
+          tm.ui.updateTabBrowserAction(tab);
+        }));
     });
   },
 
@@ -33,14 +34,13 @@ tm.tabsSync = {
 
       tm.tabs.transformIndex(detachInfo.oldPosition, detachInfo.oldWindowId)
         .then(oldPosition => tm.bookmarks.removeAtIndex(groupId, oldPosition));
-      // TODO: update tab's browserAction
     });
   },
 
   onCreated(tab) {
     if (this.disabled) return;
 
-    tm.ui.updateTabBrowserActionByWindowId(tab);
+    tm.ui.updateTabBrowserAction(tab);
   },
 
   onMoved(tabId, moveInfo) {
@@ -68,12 +68,13 @@ tm.tabsSync = {
   },
 
   onComplete(tab) {
-    if (tab.status !== 'complete') return;
+    if (tab.status !== 'complete' || tab.url.indexOf('about:') === 0) return;
 
     tm.groups.getSelectedGroupId(tab.windowId).then((groupId) => {
       if (!groupId) return;
 
-      Promise.all([tm.tabs.getOfWindow(tab.windowId), tm.bookmarks.getOfWindow(tab.windowId)])
+      Promise.all([tm.tabs.getRelevantOfWindow(tab.windowId),
+        tm.bookmarks.getOfWindow(tab.windowId)])
         .then(([tabs, bookmarks]) => this.createOrUpdate(tab, tabs, bookmarks));
     });
   },
@@ -98,7 +99,7 @@ tm.tabsSync = {
       .then((index) => {
         if (tabs.length > bookmarks.length) {
           tm.bookmarks.createFromTab(tab, index);
-        } else {
+        } else if (!this.equals(tab, bookmarks[index])) {
           tm.bookmarks.updateFromTab(tab, index);
         }
       });
@@ -111,6 +112,10 @@ tm.tabsSync = {
 
         tm.bookmarks.replaceWithTabsOfWindow(windowId, folder, excludeTabId);
       });
+  },
+
+  equals(tab, bookmark) {
+    return tab.title === bookmark.title && tab.url === bookmark.url;
   },
 
 };

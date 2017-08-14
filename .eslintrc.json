@@ -11,6 +11,11 @@
     "no-console": ["warn", { "allow": ["error"] }]
   },
   "globals": {
+    "jest": true,
+    "describe": true,
+    "beforeEach": true,
+    "test": true,
+    "expect": true,
     "tm": true
   }
 }
