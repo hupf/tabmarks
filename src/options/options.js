@@ -3,27 +3,33 @@ const options = {
   rootFolderName: null,
 
   init() {
-    document.addEventListener('click', this.handleEvent.bind(this));
-    document.addEventListener('submit', this.handleEvent.bind(this));
+    document.addEventListener('click', this.onClick.bind(this));
+    document.addEventListener('submit', this.onSubmit.bind(this));
+
     this.port = browser.runtime.connect({ name: 'options' });
-    this.port.onMessage.addListener(this.handleMessage.bind(this));
+    this.port.onMessage.addListener(this.onMessage.bind(this));
   },
 
-  handleEvent(e) {
+  onClick(e) {
     if (e.target.id === 'nameEditButton') {
       this.editName(true);
       this.nameInput.focus();
     } else if (e.target.id === 'nameCancelButton') {
       this.editName(false);
       this.nameInput.value = this.rootFolderName;
-    } else if (e.target.id === 'nameForm') {
-      e.preventDefault();
+    }
+  },
+
+  onSubmit(e) {
+    e.preventDefault();
+
+    if (e.target.id === 'nameForm') {
       this.saveRootFolderName();
       this.editName(false);
     }
   },
 
-  handleMessage(message) {
+  onMessage(message) {
     switch (message.message) {
       case 'updateRootFolderName':
         this.updateRootFolderName(message.rootFolderName);
@@ -56,19 +62,19 @@ const options = {
   },
 
   get nameInput() {
-    return document.querySelector('#rootFolderName');
+    return document.getElementById('rootFolderName');
   },
 
   get nameEditButton() {
-    return document.querySelector('#nameEditButton');
+    return document.getElementById('nameEditButton');
   },
 
   get nameCancelButton() {
-    return document.querySelector('#nameCancelButton');
+    return document.getElementById('nameCancelButton');
   },
 
   get nameSaveButton() {
-    return document.querySelector('#nameSaveButton');
+    return document.getElementById('nameSaveButton');
   },
 
 };

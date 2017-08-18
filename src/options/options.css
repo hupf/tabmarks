@@ -1,0 +1,35 @@
+.options-section {
+  padding: 0;
+}
+
+.options-item {
+  display: flex;
+  align-items: start;
+  margin: 0;
+  border-top: 1px solid #c1c1c1;
+}
+
+.options-label {
+  flex: 1;
+  padding: 6px;
+  text-align: left;
+}
+
+.options-content {
+  flex: 2;
+  display: flex;
+  padding: 6px;
+}
+
+.options-content-field {
+  flex: auto;
+}
+
+.options-content-field > * {
+  width: 100%;
+}
+
+.options-content-actions {
+  flex: none;
+  padding-left: 6px;
+}

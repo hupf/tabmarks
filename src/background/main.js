@@ -4,8 +4,8 @@ const main = {
   optionsPort: null,
 
   init() {
-    browser.runtime.onConnect.addListener(this.handleConnect.bind(this));
-    browser.runtime.onMessage.addListener(this.handleMessage.bind(this));
+    browser.runtime.onConnect.addListener(this.onConnect.bind(this));
+    browser.runtime.onMessage.addListener(this.onMessage.bind(this));
 
     browser.windows.onCreated.addListener(w => this.initWindow(w.id));
 
@@ -13,8 +13,8 @@ const main = {
       .then(() => this.loadGroups());
   },
 
-  handleConnect(port) {
-    port.onMessage.addListener(this.handleMessage.bind(this));
+  onConnect(port) {
+    port.onMessage.addListener(this.onMessage.bind(this));
     switch (port.name) {
       case 'defaultPopup':
         this.defaultPopupPort = port;
@@ -28,16 +28,16 @@ const main = {
       default:
         break;
     }
-    port.onDisconnect.addListener(this.handleDisconnect.bind(this));
+    port.onDisconnect.addListener(this.onDisconnect.bind(this));
   },
 
-  handleDisconnect(port) {
+  onDisconnect(port) {
     if (port.name === 'defaultPopup') {
       this.defaultPopupPort = null;
     }
   },
 
-  handleMessage(message) {
+  onMessage(message) {
     switch (message.message) {
       case 'createGroup':
         this.createGroup(message.windowId, message.groupName, message.saveTabs);

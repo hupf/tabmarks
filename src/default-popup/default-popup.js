@@ -5,14 +5,14 @@ const defaultPopup = {
   saveTabs: null,
 
   init() {
-    document.addEventListener('click', this.handleEvent.bind(this));
-    document.addEventListener('submit', this.handleEvent.bind(this));
+    document.addEventListener('click', this.onClick.bind(this));
+    document.addEventListener('submit', this.onSubmit.bind(this));
 
     this.port = browser.runtime.connect({ name: 'defaultPopup' });
-    this.port.onMessage.addListener(this.handleMessage.bind(this));
+    this.port.onMessage.addListener(this.onMessage.bind(this));
   },
 
-  handleEvent(e) {
+  onClick(e) {
     if (e.target.closest('.tabmarks-close-group-link')) {
       this.selectGroup(null);
     } else if (e.target.closest('.tabmarks-create-from-tabs-link')) {
@@ -26,14 +26,19 @@ const defaultPopup = {
       this.selectGroup(groupId);
     } else if (e.target.classList.contains('tabmarks-create-form-cancel')) {
       this.closePopup();
-    } else if (e.target.classList.contains('tabmarks-create-form-create') ||
-               e.target.classList.contains('tabmarks-create-form')) {
-      e.preventDefault();
+    } else if (e.target.classList.contains('tabmarks-create-form-create')) {
       this.createGroup();
     }
   },
 
-  handleMessage(message) {
+  onSubmit(e) {
+    e.preventDefault();
+    if (e.target.classList.contains('tabmarks-create-form')) {
+      this.createGroup();
+    }
+  },
+
+  onMessage(message) {
     switch (message.message) {
       case 'updateSelectedGroup':
         this.updateSelectedGroup(message.groupId);
