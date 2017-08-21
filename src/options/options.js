@@ -17,6 +17,8 @@ const options = {
     } else if (e.target.id === 'nameCancelButton') {
       this.editName(false);
       this.nameInput.value = this.rootFolderName;
+    } else if (e.target.id === 'importMessageButton') {
+      this.showImportContent();
     }
   },
 
@@ -26,6 +28,8 @@ const options = {
     if (e.target.id === 'nameForm') {
       this.saveRootFolderName();
       this.editName(false);
+    } else if (e.target.id === 'importForm') {
+      this.import();
     }
   },
 
@@ -61,6 +65,37 @@ const options = {
     this.nameSaveButton.style.display = enabled ? '' : 'none';
   },
 
+  import() {
+    this.showImportProgress();
+    tm.import.importTabGroupsJson(this.importField.value)
+      .then(() => {
+        this.importField.value = '';
+        this.showImportMessage('Import finished.');
+        this.port.postMessage({ message: 'refreshGroups' });
+      }, (error) => {
+        this.showImportMessage(`An error occurred: ${error}`);
+      });
+  },
+
+  showImportContent() {
+    this.importContent.style.display = '';
+    this.importProgress.style.display = 'none';
+    this.importMessage.style.display = 'none';
+  },
+
+  showImportProgress() {
+    this.importContent.style.display = 'none';
+    this.importProgress.style.display = '';
+    this.importMessage.style.display = 'none';
+  },
+
+  showImportMessage(message) {
+    this.importContent.style.display = 'none';
+    this.importProgress.style.display = 'none';
+    this.importMessage.querySelector('.text').textContent = message;
+    this.importMessage.style.display = '';
+  },
+
   get nameInput() {
     return document.getElementById('rootFolderName');
   },
@@ -75,6 +110,26 @@ const options = {
 
   get nameSaveButton() {
     return document.getElementById('nameSaveButton');
+  },
+
+  get importButton() {
+    return document.getElementById('importButton');
+  },
+
+  get importField() {
+    return document.getElementById('importField');
+  },
+
+  get importContent() {
+    return document.getElementById('importContent');
+  },
+
+  get importProgress() {
+    return document.getElementById('importProgress');
+  },
+
+  get importMessage() {
+    return document.getElementById('importMessage');
   },
 
 };

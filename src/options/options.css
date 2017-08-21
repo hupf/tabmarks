@@ -33,3 +33,21 @@
   flex: none;
   padding-left: 6px;
 }
+
+.spinner {
+  width: 1em;
+  height: 1em;
+  margin-right: 3px;
+  background-image: url(../../assets/icons/tabmarks.svg);
+  background-size: contain;
+  animation: spin 3000ms linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

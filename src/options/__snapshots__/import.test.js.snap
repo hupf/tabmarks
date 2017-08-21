@@ -1,0 +1,32 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`tm.import #importTabGroupsJson create bookmarks from JSON data 1`] = `
+Array [
+  Array [
+    "Group A",
+  ],
+  Array [
+    "Group B",
+  ],
+]
+`;
+
+exports[`tm.import #importTabGroupsJson create bookmarks from JSON data 2`] = `
+Array [
+  Array [
+    "MDN Web Docs",
+    "https://developer.mozilla.org/en-US/",
+    1,
+  ],
+  Array [
+    "A better, faster, private browser for today | Firefox",
+    "https://www.mozilla.org/en-US/firefox/?utm_medium=referral&utm_source=getfirefox-com",
+    1,
+  ],
+  Array [
+    "The world's leading software development platform · GitHub",
+    "https://github.com/",
+    2,
+  ],
+]
+`;

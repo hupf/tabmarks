@@ -27,9 +27,34 @@
         </div>
       </form>
 
+      <form id="importForm" class="options-item panel-formElements-item">
+        <label class="options-label browser-style-label"><i>Tab Groups</i> Add-On</label>
+        <div class="options-content" id="importContent">
+          <div class="options-content-field">
+            <textarea id="importField"
+                      class="browser-style"
+                      placeholder="Backup file contents..."></textarea>
+            To import the settings from the <i>Tab Groups</i> Add-On, go to it's preferences panel, choose "Create Backup File" and paste the file's content above.
+          </div>
+          <div class="options-content-actions">
+            <button type="submit" class="browser-style">Import</button>
+          </div>
+        </div>
+        <div class="options-content" id="importProgress" style="display:none">
+          <div class="spinner"></div> Importing...
+        </div>
+        <div class="options-content" id="importMessage" style="display:none">
+          <div class="options-content-field text"></div>
+          <div class="options-content-actions">
+            <button type="button" class="browser-style" id="importMessageButton">Dismiss</button>
+          </div>
+        </div>
+      </form>
+
     </div>
 
     <script src="../background/helpers/bookmarks.js"></script>
+    <script src="import.js"></script>
     <script src="options.js"></script>
   </body>
 

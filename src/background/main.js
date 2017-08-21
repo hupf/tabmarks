@@ -45,6 +45,9 @@ const main = {
       case 'selectGroup':
         this.selectGroup(message.windowId, message.groupId);
         break;
+      case 'refreshGroups':
+        this.loadGroups();
+        break;
       default:
         console.error('Received unknown message:', message);
     }

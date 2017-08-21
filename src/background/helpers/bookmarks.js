@@ -86,6 +86,14 @@ tm.bookmarks = {
       .then(children => Promise.all(children.map(c => browser.bookmarks.remove(c.id))));
   },
 
+  create(name, url, parentId) {
+    return browser.bookmarks.create({
+      parentId,
+      title: name,
+      url,
+    });
+  },
+
   createFromTab(tab, index) {
     return tm.groups.getSelectedGroupId(tab.windowId)
       .then(parentId =>
