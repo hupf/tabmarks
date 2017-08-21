@@ -9,7 +9,7 @@ tm.import = {
       if (Array.isArray(data.windows)) {
         return data.windows.reduce((result, windowData) =>
           result.then(() => this.importWindows(windowData)),
-          Promise.resolve());
+        Promise.resolve());
       }
       return Promise.reject('Invalid JSON structure');
     } catch (e) {
@@ -35,8 +35,8 @@ tm.import = {
     return groups.reduce((result, group) =>
       result.then(() => tm.bookmarks.createFolder(group.title)
         .then(folder => this.importTabs(group.tabs, folder)),
-              error => console.error(`Could not create folder for group "${group.title}"`, error)),
-      Promise.resolve());
+      error => console.error(`Could not create folder for group "${group.title}"`, error)),
+    Promise.resolve());
   },
 
   importTabs(tabs, folder) {
@@ -45,7 +45,7 @@ tm.import = {
         .catch((error) => {
           console.error(`Could not create bookmark "${tab.url}" in group "${folder.id}"`, error);
         }),
-      Promise.resolve());
+    Promise.resolve());
   },
 
   getGroupsData(data) {
