@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0beta2
+
+* Tab Group add-on import
+
 ## 1.0.0beta1
 
 Initial version including the following features:
