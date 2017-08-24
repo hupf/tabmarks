@@ -1,6 +1,9 @@
-if (!window.tm) window.tm = {};
+import bookmarksHelper from '../helpers/bookmarks';
+import groupsHelper from '../helpers/groups';
+import tabsHelper from '../helpers/tabs';
+import uiHelper from '../helpers/ui';
 
-tm.tabsSync = {
+export default {
   disabled: false,
 
   init() {
@@ -15,13 +18,13 @@ tm.tabsSync = {
   onAttached(tabId, attachInfo) {
     if (this.disabled) return;
 
-    tm.groups.getSelectedGroupId(attachInfo.newWindowId).then((groupId) => {
+    groupsHelper.getSelectedGroupId(attachInfo.newWindowId).then((groupId) => {
       if (!groupId) return;
 
-      tm.tabs.transformIndex(attachInfo.newPosition, attachInfo.newWindowId)
-        .then(newPosition => tm.tabs.get(tabId).then((tab) => {
-          tm.bookmarks.createFromTab(tab, newPosition);
-          tm.ui.updateTabBrowserAction(tab);
+      tabsHelper.transformIndex(attachInfo.newPosition, attachInfo.newWindowId)
+        .then(newPosition => tabsHelper.get(tabId).then((tab) => {
+          bookmarksHelper.createFromTab(tab, newPosition);
+          uiHelper.updateTabBrowserAction(tab);
         }));
     });
   },
@@ -29,26 +32,26 @@ tm.tabsSync = {
   onDetached(tabId, detachInfo) {
     if (this.disabled) return;
 
-    tm.groups.getSelectedGroupId(detachInfo.oldWindowId).then((groupId) => {
+    groupsHelper.getSelectedGroupId(detachInfo.oldWindowId).then((groupId) => {
       if (!groupId) return;
 
-      tm.tabs.transformIndex(detachInfo.oldPosition, detachInfo.oldWindowId)
-        .then(oldPosition => tm.bookmarks.removeAtIndex(groupId, oldPosition));
+      tabsHelper.transformIndex(detachInfo.oldPosition, detachInfo.oldWindowId)
+        .then(oldPosition => bookmarksHelper.removeAtIndex(groupId, oldPosition));
     });
   },
 
   onCreated(tab) {
     if (this.disabled) return;
 
-    tm.ui.updateTabBrowserAction(tab);
+    uiHelper.updateTabBrowserAction(tab);
   },
 
   onMoved(tabId, moveInfo) {
     if (this.disabled) return;
 
-    tm.tabs.transformIndex([moveInfo.fromIndex, moveInfo.toIndex], moveInfo.windowId)
+    tabsHelper.transformIndex([moveInfo.fromIndex, moveInfo.toIndex], moveInfo.windowId)
       .then(([fromIndex, toIndex]) =>
-        tm.bookmarks.moveInSelectedGroup(moveInfo.windowId, fromIndex, toIndex));
+        bookmarksHelper.moveInSelectedGroup(moveInfo.windowId, fromIndex, toIndex));
   },
 
   onRemoved(tabId, removeInfo) {
@@ -70,24 +73,24 @@ tm.tabsSync = {
   onComplete(tab) {
     if (tab.status !== 'complete' || tab.url.indexOf('about:') === 0) return;
 
-    tm.groups.getSelectedGroupId(tab.windowId).then((groupId) => {
+    groupsHelper.getSelectedGroupId(tab.windowId).then((groupId) => {
       if (!groupId) return;
 
-      Promise.all([tm.tabs.getRelevantOfWindow(tab.windowId),
-        tm.bookmarks.getOfWindow(tab.windowId)])
+      Promise.all([tabsHelper.getRelevantOfWindow(tab.windowId),
+        bookmarksHelper.getOfWindow(tab.windowId)])
         .then(([tabs, bookmarks]) => this.createOrUpdate(tab, tabs, bookmarks));
     });
   },
 
   onPinnedChange(tab) {
-    tm.groups.getSelectedGroupId(tab.windowId).then((groupId) => {
+    groupsHelper.getSelectedGroupId(tab.windowId).then((groupId) => {
       if (!groupId) return;
 
       if (tab.pinned) {
         this.replaceAll(tab.windowId, tab.id);
       } else {
-        tm.tabs.transformIndex(tab.index, tab.windowId)
-          .then(index => tm.bookmarks.createFromTab(tab, index));
+        tabsHelper.transformIndex(tab.index, tab.windowId)
+          .then(index => bookmarksHelper.createFromTab(tab, index));
       }
     });
   },
@@ -95,22 +98,22 @@ tm.tabsSync = {
   createOrUpdate(tab, tabs, bookmarks) {
     if (bookmarks == null) return;
 
-    tm.tabs.transformIndex(tab.index, tab.windowId)
+    tabsHelper.transformIndex(tab.index, tab.windowId)
       .then((index) => {
         if (tabs.length > bookmarks.length) {
-          tm.bookmarks.createFromTab(tab, index);
+          bookmarksHelper.createFromTab(tab, index);
         } else if (!this.equals(tab, bookmarks[index])) {
-          tm.bookmarks.updateFromTab(tab, index);
+          bookmarksHelper.updateFromTab(tab, index);
         }
       });
   },
 
   replaceAll(windowId, excludeTabId) {
-    tm.groups.getSelectedGroupFolder(windowId)
+    groupsHelper.getSelectedGroupFolder(windowId)
       .then((folder) => {
         if (!folder) return;
 
-        tm.bookmarks.replaceWithTabsOfWindow(windowId, folder, excludeTabId);
+        bookmarksHelper.replaceWithTabsOfWindow(windowId, folder, excludeTabId);
       });
   },
 
@@ -119,5 +122,3 @@ tm.tabsSync = {
   },
 
 };
-
-tm.tabsSync.init();

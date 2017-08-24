@@ -1,4 +1,7 @@
-const options = {
+import bookmarksHelper from '../helpers/bookmarks';
+import importHelper from '../helpers/import';
+
+export default {
 
   rootFolderName: null,
 
@@ -55,7 +58,7 @@ const options = {
       this.nameInput.value = this.rootFolderName;
       return;
     }
-    tm.bookmarks.renameRootFolder(name);
+    bookmarksHelper.renameRootFolder(name);
   },
 
   editName(enabled) {
@@ -67,7 +70,7 @@ const options = {
 
   import() {
     this.showImportProgress();
-    tm.import.importTabGroupsJson(this.importField.value)
+    importHelper.importTabGroupsJson(this.importField.value)
       .then(() => {
         this.importField.value = '';
         this.showImportMessage('Import finished.');
@@ -133,5 +136,3 @@ const options = {
   },
 
 };
-
-options.init();

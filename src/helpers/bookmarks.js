@@ -1,8 +1,9 @@
-if (!window.tm) window.tm = {};
+import groupsHelper from './groups';
+import tabsHelper from './tabs';
 
 const DEFAULT_ROOT_FOLDER_NAME = 'Tabmarks Groups';
 
-tm.bookmarks = {
+export default {
   rootFolderName: null,
 
   getRootFolderName() {
@@ -63,7 +64,7 @@ tm.bookmarks = {
   },
 
   getOfWindow(windowId) {
-    return tm.groups.getSelectedGroupId(windowId)
+    return groupsHelper.getSelectedGroupId(windowId)
       .then((groupId) => {
         if (groupId) {
           return this.getChildren(groupId);
@@ -95,7 +96,7 @@ tm.bookmarks = {
   },
 
   createFromTab(tab, index) {
-    return tm.groups.getSelectedGroupId(tab.windowId)
+    return groupsHelper.getSelectedGroupId(tab.windowId)
       .then(parentId =>
         browser.bookmarks.create({
           parentId,
@@ -122,7 +123,7 @@ tm.bookmarks = {
 
   moveInSelectedGroup(windowId, fromIndex, toIndex) {
     if (fromIndex == null || toIndex == null) return Promise.resolve(false);
-    return tm.groups.getSelectedGroupId(windowId)
+    return groupsHelper.getSelectedGroupId(windowId)
       .then(parentId =>
         parentId && this.getChildren(parentId)
           .then(bookmarks => bookmarks[fromIndex])
@@ -130,7 +131,7 @@ tm.bookmarks = {
   },
 
   saveTabsOfWindow(windowId, folder, excludeTabId = null) {
-    return tm.tabs.getRelevantOfWindow(windowId)
+    return tabsHelper.getRelevantOfWindow(windowId)
       .then(tabs => tabs.filter(t => t.id !== excludeTabId))
       // Save bookmarks on-by-one due to problems with index
       .then(tabs => tabs.reduce((result, tab, index) =>
@@ -143,8 +144,8 @@ tm.bookmarks = {
   },
 
   replaceWithTabsOfWindow(windowId, folder, excludeTabId) {
-    return tm.bookmarks.emptyFolder(folder.id)
-      .then(() => tm.bookmarks.saveTabsOfWindow(windowId, folder, excludeTabId));
+    return this.emptyFolder(folder.id)
+      .then(() => this.saveTabsOfWindow(windowId, folder, excludeTabId));
   },
 
 };

@@ -1,10 +1,10 @@
-if (!window.tm) window.tm = {};
+import bookmarksHelper from './bookmarks';
 
-tm.groups = {
+export default {
   selectedGroupIds: null,
 
   getAll() {
-    return tm.bookmarks.getRootFolder()
+    return bookmarksHelper.getRootFolder()
       .then(rootFolder => rootFolder && browser.bookmarks.getChildren(rootFolder.id))
       .then((groupFolders) => {
         if (groupFolders) {
@@ -43,7 +43,7 @@ tm.groups = {
 
   getSelectedGroupFolder(windowId) {
     return this.getSelectedGroupId(windowId)
-      .then(groupId => tm.bookmarks.getFolder(groupId));
+      .then(groupId => bookmarksHelper.getFolder(groupId));
   },
 
   // TODO: test & use instead of OnWindowRemoved after browser start

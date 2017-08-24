@@ -1,6 +1,6 @@
-if (!window.tm) window.tm = {};
+import bookmarksHelper from './bookmarks';
 
-tm.import = {
+export default {
 
   importTabGroupsJson(json) {
     let data;
@@ -33,7 +33,7 @@ tm.import = {
 
   importGroups(groups) {
     return groups.reduce((result, group) =>
-      result.then(() => tm.bookmarks.createFolder(group.title)
+      result.then(() => bookmarksHelper.createFolder(group.title)
         .then(folder => this.importTabs(group.tabs, folder)),
       error => console.error(`Could not create folder for group "${group.title}"`, error)),
     Promise.resolve());
@@ -41,7 +41,7 @@ tm.import = {
 
   importTabs(tabs, folder) {
     return tabs.reduce((result, tab) =>
-      result.then(() => tm.bookmarks.create(tab.title, tab.url, folder.id))
+      result.then(() => bookmarksHelper.create(tab.title, tab.url, folder.id))
         .catch((error) => {
           console.error(`Could not create bookmark "${tab.url}" in group "${folder.id}"`, error);
         }),

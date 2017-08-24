@@ -1,15 +1,17 @@
-if (!window.tm) window.tm = {};
+import bookmarksHelper from './bookmarks';
+import groupsHelper from './groups';
+import tabsHelper from './tabs';
 
-tm.ui = {
+export default {
 
   updateWindowBrowserActions(windowId, groupId) {
-    Promise.all([tm.bookmarks.getFolder(groupId), tm.tabs.getOfWindow(windowId, {})])
+    Promise.all([bookmarksHelper.getFolder(groupId), tabsHelper.getOfWindow(windowId, {})])
       .then(([folder, tabs]) =>
         tabs.forEach(tab => this.updateTabBrowserActionForFolder(tab, folder)));
   },
 
   updateTabBrowserAction(tab) {
-    tm.groups.getSelectedGroupFolder(tab.windowId)
+    groupsHelper.getSelectedGroupFolder(tab.windowId)
       .then(folder => this.updateTabBrowserActionForFolder(tab, folder));
   },
 

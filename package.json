@@ -5,10 +5,15 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "web-ext run",
+    "clean": "rm -rf dist",
+    "start": "npm-run-all clean build:webpack --parallel watch:webpack watch:web-ext",
+    "watch:webpack": "webpack --watch",
+    "watch:web-ext": "web-ext run",
     "lint": "eslint .",
-    "build": "web-ext build --ignore-files=package.json yarn.lock \"**/*.test.js\" --overwrite-dest",
-    "sign": "web-ext sign --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET"
+    "build": "npm-run-all clean build:webpack build:web-ext",
+    "build:webpack": "webpack",
+    "build:web-ext": "web-ext build --source-dir=dist --ignore-files=package.json yarn.lock \"**/*.test.js\" --overwrite-dest",
+    "sign": "web-ext sign --source-dir=dist --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET"
   },
   "repository": {
     "type": "git",
@@ -22,10 +27,17 @@
   "homepage": "https://github.com/hupf/tabmarks#readme",
   "dependencies": {},
   "devDependencies": {
-    "eslint": "^4.4.1",
-    "eslint-config-airbnb-base": "^11.3.1",
+    "babel-preset-es2015": "^6.24.1",
+    "copy-webpack-plugin": "^4.0.1",
+    "eslint": "^4.5.0",
+    "eslint-config-airbnb-base": "^11.3.2",
     "eslint-plugin-import": "^2.7.0",
     "jest": "^20.0.4",
-    "web-ext": "^2.0.0"
+    "npm-run-all": "^4.0.2",
+    "web-ext": "^2.0.0",
+    "webpack": "^3.5.5"
+  },
+  "jest": {
+    "clearMocks": true
   }
 }

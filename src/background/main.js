@@ -1,4 +1,9 @@
-const main = {
+import bookmarksHelper from '../helpers/bookmarks';
+import groupsHelper from '../helpers/groups';
+import tabsHelper from '../helpers/tabs';
+import uiHelper from '../helpers/ui';
+
+export default {
 
   defaultPopupPort: null,
   optionsPort: null,
@@ -61,8 +66,8 @@ const main = {
   },
 
   initWindow(windowId) {
-    return Promise.all([tm.groups.getSelectedGroupId(windowId),
-      tm.tabs.getRelevantOfWindow(windowId)])
+    return Promise.all([groupsHelper.getSelectedGroupId(windowId),
+      tabsHelper.getRelevantOfWindow(windowId)])
       .then(([groupId, tabs]) => {
         if (tabs.length === 0) {
           // Browser opens new tab on startup
@@ -74,7 +79,7 @@ const main = {
   },
 
   loadGroups() {
-    return tm.groups.getAll().then((groups) => {
+    return groupsHelper.getAll().then((groups) => {
       if (groups) {
         this.groups = groups;
         this.updateDefaultPopupGroupList();
@@ -83,14 +88,14 @@ const main = {
   },
 
   createGroup(windowId, name, saveTabs) {
-    tm.bookmarks.createFolder(name).then((folder) => {
+    bookmarksHelper.createFolder(name).then((folder) => {
       let promise;
       if (saveTabs) {
         // Create group from currently open tabs
-        promise = tm.bookmarks.saveTabsOfWindow(windowId, folder);
+        promise = bookmarksHelper.saveTabsOfWindow(windowId, folder);
       } else {
         // Create empty group with new tab (and close currently open tabs)
-        promise = tm.tabs.openEmptyGroup(windowId);
+        promise = tabsHelper.openEmptyGroup(windowId);
       }
       promise.then(() => this.updateSelectedGroup(windowId, folder.id));
 
@@ -100,25 +105,25 @@ const main = {
 
   selectGroup(windowId, groupId = null) {
     if (!groupId) {
-      tm.tabs.openEmptyGroup(windowId)
+      tabsHelper.openEmptyGroup(windowId)
         .then(() => this.updateSelectedGroup(windowId, null));
       return;
     }
 
-    tm.tabs.openGroup(windowId, groupId)
+    tabsHelper.openGroup(windowId, groupId)
       .then(() => this.updateSelectedGroup(windowId, groupId));
   },
 
   updateSelectedGroup(windowId, groupId) {
-    tm.groups.saveSelectedGroupId(windowId, groupId);
-    tm.ui.updateWindowBrowserActions(windowId, groupId);
+    groupsHelper.saveSelectedGroupId(windowId, groupId);
+    uiHelper.updateWindowBrowserActions(windowId, groupId);
   },
 
   updateDefaultPopupSelectedGroup() {
     if (!this.defaultPopupPort) return;
 
     browser.windows.getCurrent().then(w => w.id)
-      .then(windowId => tm.groups.getSelectedGroupId(windowId))
+      .then(windowId => groupsHelper.getSelectedGroupId(windowId))
       .then((groupId) => {
         this.defaultPopupPort.postMessage({
           message: 'updateSelectedGroup',
@@ -137,10 +142,8 @@ const main = {
   updateOptionsRootFolderName() {
     if (!this.optionsPort) return;
 
-    tm.bookmarks.getRootFolderName().then(rootFolderName =>
+    bookmarksHelper.getRootFolderName().then(rootFolderName =>
       this.optionsPort.postMessage({ message: 'updateRootFolderName', rootFolderName }));
   },
 
 };
-
-main.init();

@@ -1,4 +1,4 @@
-const defaultPopup = {
+export default {
 
   port: null,
   selectedGroupId: null,
@@ -173,5 +173,3 @@ const defaultPopup = {
   },
 
 };
-
-defaultPopup.init();

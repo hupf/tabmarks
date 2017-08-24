@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`tm.import #importTabGroupsJson create bookmarks from JSON data 1`] = `
+exports[`importHelper #importTabGroupsJson create bookmarks from JSON data 1`] = `
 Array [
   Array [
     "Group A",
@@ -11,7 +11,7 @@ Array [
 ]
 `;
 
-exports[`tm.import #importTabGroupsJson create bookmarks from JSON data 2`] = `
+exports[`importHelper #importTabGroupsJson create bookmarks from JSON data 2`] = `
 Array [
   Array [
     "MDN Web Docs",

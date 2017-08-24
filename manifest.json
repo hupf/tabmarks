@@ -21,12 +21,7 @@
   ],
   "background": {
     "scripts": [
-      "src/background/helpers/bookmarks.js",
-      "src/background/helpers/groups.js",
-      "src/background/helpers/tabs.js",
-      "src/background/helpers/ui.js",
-      "src/background/main.js",
-      "src/background/tabs-sync.js"
+      "src/background/index.js"
     ]
   },
   "browser_action": {

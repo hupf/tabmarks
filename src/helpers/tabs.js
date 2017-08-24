@@ -1,6 +1,7 @@
-if (!window.tm) window.tm = {};
+import bookmarksHelper from './bookmarks';
+import tabsSync from '../background/tabs-sync';
 
-tm.tabs = {
+export default {
 
   get(tabId) {
     return browser.tabs.get(tabId);
@@ -43,7 +44,7 @@ tm.tabs = {
     return this.getOfWindow(windowId)
       .then(tabs => tabs.map(t => t.id))
       .then(previousTabIds =>
-        tm.bookmarks.getChildren(groupId)
+        bookmarksHelper.getChildren(groupId)
           .then(bookmarks => this.withTabSyncDisabled(() => {
             let promise;
             if (bookmarks.length === 0) {
@@ -76,17 +77,17 @@ tm.tabs = {
   },
 
   withTabSyncDisabled(promiseCallback) {
-    tm.tabsSync.disabled = true;
+    tabsSync.disabled = true;
     return promiseCallback().then(
       (result) => {
         setTimeout(() => {
-          tm.tabsSync.disabled = false;
+          tabsSync.disabled = false;
         });
         return result;
       },
       (error) => {
         setTimeout(() => {
-          tm.tabsSync.disabled = false;
+          tabsSync.disabled = false;
         });
         return Promise.reject(error);
       });
