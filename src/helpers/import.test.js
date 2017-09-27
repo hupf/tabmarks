@@ -18,7 +18,10 @@ const json = '{"version":["tabGroups",1],"session":{"lastUpdate":1503346557406,"
 describe('importHelper', () => {
   describe('#importTabGroupsJson', () => {
     test('rejects if invalid JSON data', (done) => {
-      importHelper.importTabGroupsJson('foo').catch(done);
+      importHelper.importTabGroupsJson('foo').catch((error) => {
+        expect(error).toEqual('Unable to parse JSON');
+        done();
+      });
     });
 
     test('create bookmarks from JSON data', () =>
