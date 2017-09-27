@@ -5,13 +5,13 @@ import tabsHelper from './tabs';
 export default {
 
   updateWindowBrowserActions(windowId, groupId) {
-    Promise.all([bookmarksHelper.getFolder(groupId), tabsHelper.getOfWindow(windowId, {})])
+    return Promise.all([bookmarksHelper.getFolder(groupId), tabsHelper.getOfWindow(windowId, {})])
       .then(([folder, tabs]) =>
         tabs.forEach(tab => this.updateTabBrowserActionForFolder(tab, folder)));
   },
 
   updateTabBrowserAction(tab) {
-    groupsHelper.getSelectedGroupFolder(tab.windowId)
+    return groupsHelper.getSelectedGroupFolder(tab.windowId)
       .then(folder => this.updateTabBrowserActionForFolder(tab, folder));
   },
 

@@ -1,3 +1,7 @@
+import { Subject } from 'rxjs/Subject';
+import 'rxjs/add/operator/filter';
+import 'rxjs/add/operator/concatMap';
+
 import bookmarksHelper from '../helpers/bookmarks';
 import groupsHelper from '../helpers/groups';
 import tabsHelper from '../helpers/tabs';
@@ -7,113 +11,170 @@ export default {
   disabled: false,
 
   init() {
-    browser.tabs.onAttached.addListener(this.onAttached.bind(this));
-    browser.tabs.onDetached.addListener(this.onDetached.bind(this));
-    browser.tabs.onCreated.addListener(this.onCreated.bind(this));
-    browser.tabs.onMoved.addListener(this.onMoved.bind(this));
-    browser.tabs.onRemoved.addListener(this.onRemoved.bind(this));
-    browser.tabs.onUpdated.addListener(this.onUpdated.bind(this));
+    this.bindAttached();
+    this.bindDetached();
+    this.bindCreated();
+    this.bindMoved();
+    this.bindRemoved();
+    this.bindUpdated();
+  },
+
+  bindAttached() {
+    const attached$ = new Subject();
+    browser.tabs.onAttached.addListener((tabId, attachInfo) => {
+      attached$.next({ tabId, attachInfo });
+    });
+    attached$
+      .filter(() => !this.disabled)
+      .concatMap(event => this.onAttached(event.tabId, event.attachInfo))
+      .subscribe();
   },
 
   onAttached(tabId, attachInfo) {
-    if (this.disabled) return;
+    // TODO: two update events fire between detach/attach, make sure it only is saved once
+    return groupsHelper.getSelectedGroupId(attachInfo.newWindowId).then((groupId) => {
+      if (!groupId) return false;
 
-    groupsHelper.getSelectedGroupId(attachInfo.newWindowId).then((groupId) => {
-      if (!groupId) return;
-
-      tabsHelper.transformIndex(attachInfo.newPosition, attachInfo.newWindowId)
-        .then(newPosition => tabsHelper.get(tabId).then((tab) => {
-          bookmarksHelper.createFromTab(tab, newPosition);
-          uiHelper.updateTabBrowserAction(tab);
-        }));
+      return tabsHelper.transformIndex(attachInfo.newPosition, attachInfo.newWindowId)
+        .then(newPosition => tabsHelper.get(tabId).then(tab => Promise.all([
+          bookmarksHelper.createFromTab(tab, newPosition),
+          uiHelper.updateTabBrowserAction(tab),
+        ])));
     });
   },
 
+  bindDetached() {
+    const detached$ = new Subject();
+    browser.tabs.onDetached.addListener((tabId, detachInfo) => {
+      detached$.next({ tabId, detachInfo });
+    });
+    detached$
+      .filter(() => !this.disabled)
+      .concatMap(event => this.onDetached(event.tabId, event.detachInfo))
+      .subscribe();
+  },
+
   onDetached(tabId, detachInfo) {
-    if (this.disabled) return;
+    return groupsHelper.getSelectedGroupId(detachInfo.oldWindowId).then((groupId) => {
+      if (!groupId) return false;
 
-    groupsHelper.getSelectedGroupId(detachInfo.oldWindowId).then((groupId) => {
-      if (!groupId) return;
-
-      tabsHelper.transformIndex(detachInfo.oldPosition, detachInfo.oldWindowId)
+      return tabsHelper.transformIndex(detachInfo.oldPosition, detachInfo.oldWindowId)
         .then(oldPosition => bookmarksHelper.removeAtIndex(groupId, oldPosition));
     });
   },
 
-  onCreated(tab) {
-    if (this.disabled) return;
+  bindCreated() {
+    const created$ = new Subject();
+    browser.tabs.onCreated.addListener((tab) => {
+      created$.next({ tab });
+    });
+    created$
+      .filter(() => !this.disabled)
+      .concatMap(event => this.onCreated(event.tab))
+      .subscribe();
+  },
 
-    uiHelper.updateTabBrowserAction(tab);
+  onCreated(tab) {
+    return uiHelper.updateTabBrowserAction(tab);
+  },
+
+  bindMoved() {
+    const moved$ = new Subject();
+    browser.tabs.onMoved.addListener((tabId, moveInfo) => {
+      moved$.next({ tabId, moveInfo });
+    });
+    moved$
+      .filter(() => !this.disabled)
+      .concatMap(event => this.onMoved(event.tabId, event.moveInfo))
+      .subscribe();
   },
 
   onMoved(tabId, moveInfo) {
-    if (this.disabled) return;
-
-    tabsHelper.transformIndex([moveInfo.fromIndex, moveInfo.toIndex], moveInfo.windowId)
+    return tabsHelper.transformIndex([moveInfo.fromIndex, moveInfo.toIndex], moveInfo.windowId)
       .then(([fromIndex, toIndex]) =>
         bookmarksHelper.moveInSelectedGroup(moveInfo.windowId, fromIndex, toIndex));
   },
 
-  onRemoved(tabId, removeInfo) {
-    if (this.disabled || removeInfo.isWindowClosing) return;
+  bindRemoved() {
+    const removed$ = new Subject();
+    browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
+      removed$.next({ tabId, removeInfo });
+    });
+    removed$
+      .filter((tabId, removeInfo) => !this.disabled && !removeInfo.isWindowClosing)
+      .concatMap(event => this.onRemoved(event.tabId, event.removeInfo))
+      .subscribe();
+  },
 
-    this.replaceAll(removeInfo.windowId, tabId);
+  onRemoved(tabId, removeInfo) {
+    return this.replaceAll(removeInfo.windowId, tabId);
+  },
+
+  bindUpdated() {
+    const updated$ = new Subject();
+    browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+      updated$.next({ tabId, changeInfo, tab });
+    });
+    updated$
+      .filter(() => !this.disabled)
+      .concatMap(event => this.onUpdated(event.tabId, event.changeInfo, event.tab))
+      .subscribe();
   },
 
   onUpdated(tabId, changeInfo, tab) {
-    if (this.disabled) return;
-
-    if (Object.prototype.hasOwnProperty.call(changeInfo, 'status') && changeInfo.status === 'complete') {
-      this.onComplete(tab);
+    if (Object.prototype.hasOwnProperty.call(changeInfo, 'url') ||
+        Object.prototype.hasOwnProperty.call(changeInfo, 'title')) {
+      return this.onUrlChange(tab);
     } else if (Object.prototype.hasOwnProperty.call(changeInfo, 'pinned')) {
-      this.onPinnedChange(tab);
+      return this.onPinnedChange(tab);
     }
+    return Promise.resolve();
   },
 
-  onComplete(tab) {
-    if (tab.status !== 'complete' || tab.url.indexOf('about:') === 0) return;
+  onUrlChange(tab) {
+    if (tab.url && tab.url.indexOf('about:') === 0) return Promise.resolve();
 
-    groupsHelper.getSelectedGroupId(tab.windowId).then((groupId) => {
-      if (!groupId) return;
+    return groupsHelper.getSelectedGroupId(tab.windowId).then((groupId) => {
+      if (!groupId) return false;
 
-      Promise.all([tabsHelper.getRelevantOfWindow(tab.windowId),
+      return Promise.all([tabsHelper.getRelevantOfWindow(tab.windowId),
         bookmarksHelper.getOfWindow(tab.windowId)])
         .then(([tabs, bookmarks]) => this.createOrUpdate(tab, tabs, bookmarks));
     });
   },
 
   onPinnedChange(tab) {
-    groupsHelper.getSelectedGroupId(tab.windowId).then((groupId) => {
-      if (!groupId) return;
+    return groupsHelper.getSelectedGroupId(tab.windowId).then((groupId) => {
+      if (!groupId) return false;
 
       if (tab.pinned) {
-        this.replaceAll(tab.windowId, tab.id);
-      } else {
-        tabsHelper.transformIndex(tab.index, tab.windowId)
-          .then(index => bookmarksHelper.createFromTab(tab, index));
+        return this.replaceAll(tab.windowId, tab.id);
       }
+      return tabsHelper.transformIndex(tab.index, tab.windowId)
+        .then(index => bookmarksHelper.createFromTab(tab, index));
     });
   },
 
   createOrUpdate(tab, tabs, bookmarks) {
-    if (bookmarks == null) return;
+    if (bookmarks == null) return Promise.resolve();
 
-    tabsHelper.transformIndex(tab.index, tab.windowId)
+    return tabsHelper.transformIndex(tab.index, tab.windowId)
       .then((index) => {
         if (tabs.length > bookmarks.length) {
-          bookmarksHelper.createFromTab(tab, index);
+          return bookmarksHelper.createFromTab(tab, index);
         } else if (!this.equals(tab, bookmarks[index])) {
-          bookmarksHelper.updateFromTab(tab, index);
+          return bookmarksHelper.updateFromTab(tab, index);
         }
+        return false;
       });
   },
 
   replaceAll(windowId, excludeTabId) {
-    groupsHelper.getSelectedGroupFolder(windowId)
+    return groupsHelper.getSelectedGroupFolder(windowId)
       .then((folder) => {
-        if (!folder) return;
+        if (!folder) return false;
 
-        bookmarksHelper.replaceWithTabsOfWindow(windowId, folder, excludeTabId);
+        return bookmarksHelper.replaceWithTabsOfWindow(windowId, folder, excludeTabId);
       });
   },
 
