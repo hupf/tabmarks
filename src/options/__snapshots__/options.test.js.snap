@@ -1,0 +1,52 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`options #import displays error on complete import failure 1`] = `
+Array [
+  Array [
+    "{ \\"foo\\": \\"bar\\" }",
+    [Function],
+  ],
+]
+`;
+
+exports[`options #import displays error on complete import failure 2`] = `
+Array [
+  Array [
+    "An error occurred: Bad",
+  ],
+]
+`;
+
+exports[`options #import imports JSON data and displays failed folder/bookmark creations 1`] = `
+Array [
+  Array [
+    "{ \\"foo\\": \\"bar\\" }",
+    [Function],
+  ],
+]
+`;
+
+exports[`options #import imports JSON data and displays failed folder/bookmark creations 2`] = `
+Array [
+  Array [
+    "Import finished. (failed to create: folder Group A, bookmark https://developer.mozilla.org/en-US/, bookmark https://github.com/)",
+  ],
+]
+`;
+
+exports[`options #import imports JSON data and displays success message 1`] = `
+Array [
+  Array [
+    "{ \\"foo\\": \\"bar\\" }",
+    [Function],
+  ],
+]
+`;
+
+exports[`options #import imports JSON data and displays success message 2`] = `
+Array [
+  Array [
+    "Import finished.",
+  ],
+]
+`;

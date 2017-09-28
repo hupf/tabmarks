@@ -42,7 +42,7 @@ export default {
         this.updateRootFolderName(message.rootFolderName);
         break;
       default:
-        console.error('Received unknown message:', message);
+        // Unknown message
     }
   },
 
@@ -70,10 +70,17 @@ export default {
 
   import() {
     this.showImportProgress();
-    importHelper.importTabGroupsJson(this.importField.value)
+    const errors = [];
+    return importHelper.importTabGroupsJson(this.importField.value, error => errors.push(error))
       .then(() => {
         this.importField.value = '';
-        this.showImportMessage('Import finished.');
+
+        let message = 'Import finished.';
+        if (errors.length > 0) {
+          message += ` (failed to create: ${errors.map(e => `${e.type} ${e.name}`).join(', ')})`;
+        }
+        this.showImportMessage(message);
+
         this.port.postMessage({ message: 'refreshGroups' });
       }, (error) => {
         this.showImportMessage(`An error occurred: ${error}`);

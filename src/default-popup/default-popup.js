@@ -47,7 +47,7 @@ export default {
         this.updateGroupList(message.groups);
         break;
       default:
-        console.error('Received unknown message:', message);
+        // Unknown message
     }
   },
 

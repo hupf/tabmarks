@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "test:watch": "jest --watch",
     "clean": "rm -rf dist",
     "start": "npm-run-all clean build:webpack --parallel watch:webpack watch:web-ext",
     "watch:webpack": "webpack --watch",

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`importHelper #importTabGroupsJson create bookmarks from JSON data 1`] = `
+exports[`importHelper #importTabGroupsJson creates bookmarks from JSON data 1`] = `
 Array [
   Array [
     "Group A",
@@ -11,7 +11,7 @@ Array [
 ]
 `;
 
-exports[`importHelper #importTabGroupsJson create bookmarks from JSON data 2`] = `
+exports[`importHelper #importTabGroupsJson creates bookmarks from JSON data 2`] = `
 Array [
   Array [
     "MDN Web Docs",
@@ -27,6 +27,51 @@ Array [
     "The world's leading software development platform · GitHub",
     "https://github.com/",
     2,
+  ],
+]
+`;
+
+exports[`importHelper #importTabGroupsJson creation failures errorCallback is called for each folder or bookmark creation failure 1`] = `
+Array [
+  Array [
+    "Group A",
+  ],
+  Array [
+    "Group B",
+  ],
+]
+`;
+
+exports[`importHelper #importTabGroupsJson creation failures errorCallback is called for each folder or bookmark creation failure 2`] = `
+Array [
+  Array [
+    "MDN Web Docs",
+    "https://developer.mozilla.org/en-US/",
+    1,
+  ],
+  Array [
+    "A better, faster, private browser for today | Firefox",
+    "https://www.mozilla.org/en-US/firefox/?utm_medium=referral&utm_source=getfirefox-com",
+    1,
+  ],
+]
+`;
+
+exports[`importHelper #importTabGroupsJson creation failures errorCallback is called for each folder or bookmark creation failure 3`] = `
+Array [
+  Array [
+    Object {
+      "error": "Bookmark creation failed",
+      "name": "https://developer.mozilla.org/en-US/",
+      "type": "bookmark",
+    },
+  ],
+  Array [
+    Object {
+      "error": "Folder creation failed",
+      "name": "Group B",
+      "type": "folder",
+    },
   ],
 ]
 `;

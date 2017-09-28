@@ -24,10 +24,42 @@ describe('importHelper', () => {
       });
     });
 
-    test('create bookmarks from JSON data', () =>
-      importHelper.importTabGroupsJson(json).then(() => {
+    test('creates bookmarks from JSON data', () => {
+      const errorCallback = jest.fn();
+      return importHelper.importTabGroupsJson(json, errorCallback).then(() => {
         expect(bookmarksHelper.createFolder.mock.calls).toMatchSnapshot();
         expect(bookmarksHelper.create.mock.calls).toMatchSnapshot();
-      }));
+        expect(errorCallback).not.toBeCalled();
+      });
+    });
+
+    describe('creation failures', () => {
+      beforeEach(() => {
+        bookmarksHelper.createFolder = jest.fn().mockImplementation((title) => {
+          if (title === 'Group A') {
+            return Promise.resolve({ id: 1 });
+          } else if (title === 'Group B') {
+            return Promise.reject('Folder creation failed');
+          }
+          return Promise.reject('Unexpected folder title');
+        });
+
+        bookmarksHelper.create = jest.fn().mockImplementation((name) => {
+          if (name === 'MDN Web Docs') {
+            return Promise.reject('Bookmark creation failed');
+          }
+          return Promise.resolve();
+        });
+      });
+
+      test('errorCallback is called for each folder or bookmark creation failure', () => {
+        const errorCallback = jest.fn();
+        return importHelper.importTabGroupsJson(json, errorCallback).then(() => {
+          expect(bookmarksHelper.createFolder.mock.calls).toMatchSnapshot();
+          expect(bookmarksHelper.create.mock.calls).toMatchSnapshot();
+          expect(errorCallback.mock.calls).toMatchSnapshot();
+        });
+      });
+    });
   });
 });

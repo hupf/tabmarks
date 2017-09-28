@@ -2,13 +2,13 @@ import bookmarksHelper from './bookmarks';
 
 export default {
 
-  importTabGroupsJson(json) {
+  importTabGroupsJson(json, errorCallback) {
     let data;
     try {
       data = JSON.parse(json);
       if (Array.isArray(data.windows)) {
         return data.windows.reduce((result, windowData) =>
-          result.then(() => this.importWindows(windowData)),
+          result.then(() => this.importWindows(windowData, errorCallback)),
         Promise.resolve());
       }
       return Promise.reject('Invalid JSON structure');
@@ -17,7 +17,7 @@ export default {
     }
   },
 
-  importWindows(data) {
+  importWindows(data, errorCallback) {
     const groups = this.getGroupsData(data);
     const tabs = this.getTabsData(data);
 
@@ -25,25 +25,31 @@ export default {
       groups.forEach((group, i) => {
         groups[i].tabs = tabs.filter(t => t.groupId === group.id);
       });
-      return this.importGroups(groups);
+      return this.importGroups(groups, errorCallback);
     }
 
     return Promise.resolve();
   },
 
-  importGroups(groups) {
+  importGroups(groups, errorCallback) {
     return groups.reduce((result, group) =>
       result.then(() => bookmarksHelper.createFolder(group.title)
-        .then(folder => this.importTabs(group.tabs, folder)),
-      error => console.error(`Could not create folder for group "${group.title}"`, error)),
-    Promise.resolve());
+        .then(folder => this.importTabs(group.tabs, folder, errorCallback)))
+        .catch((error) => {
+          if (errorCallback) {
+            errorCallback({ type: 'folder', name: group.title, error });
+          }
+        }),
+      Promise.resolve());
   },
 
-  importTabs(tabs, folder) {
+  importTabs(tabs, folder, errorCallback) {
     return tabs.reduce((result, tab) =>
       result.then(() => bookmarksHelper.create(tab.title, tab.url, folder.id))
         .catch((error) => {
-          console.error(`Could not create bookmark "${tab.url}" in group "${folder.id}"`, error);
+          if (errorCallback) {
+            errorCallback({ type: 'bookmark', name: tab.url, error });
+          }
         }),
     Promise.resolve());
   },
