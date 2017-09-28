@@ -2,7 +2,9 @@
 
 ## 1.0.0beta2
 
+* More robust tabs to bookmarks sync
 * Tab Group add-on import
+* Improved preferences styling
 
 ## 1.0.0beta1
 
