@@ -11,7 +11,9 @@ export default {
   disabled: false,
 
   init() {
-    this.bindAttached();
+    // TODO: two update events fire between detach/attach, how to make sure
+    // attach is no creatin another bookmark? Workaround: ignore onAttached
+    // this.bindAttached();
     this.bindDetached();
     this.bindCreated();
     this.bindMoved();
@@ -31,7 +33,6 @@ export default {
   },
 
   onAttached(tabId, attachInfo) {
-    // TODO: two update events fire between detach/attach, make sure it only is saved once
     return groupsHelper.getSelectedGroupId(attachInfo.newWindowId).then((groupId) => {
       if (!groupId) return false;
 
