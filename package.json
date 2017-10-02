@@ -7,14 +7,14 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "clean": "rm -rf dist",
-    "start": "npm-run-all clean build:webpack --parallel watch:webpack watch:web-ext",
-    "watch:webpack": "webpack --watch",
-    "watch:web-ext": "web-ext run",
+    "start": "npm-run-all clean build:assets --parallel watch:rollup watch:web-ext",
+    "watch:rollup": "rollup -c -w",
+    "watch:web-ext": "web-ext run --source-dir=dist --keep-profile-changes -p /Users/hupf/Library/Application\\ Support/Firefox/Profiles/mpxk0czw.tabmarks-dev -f /Applications/FirefoxNightly.app/Contents/MacOS/firefox",
     "lint": "eslint .",
-    "build": "npm-run-all clean build:webpack build:web-ext",
-    "build:webpack": "webpack",
-    "build:web-ext": "web-ext build --source-dir=dist --ignore-files=package.json yarn.lock \"**/*.test.js\" --overwrite-dest",
-    "sign": "web-ext sign --source-dir=dist --api-key=$AMO_JWT_ISSUER --api-secret=$AMO_JWT_SECRET"
+    "build": "npm-run-all clean build:rollup build:assets build:web-ext",
+    "build:rollup": "rollup -c",
+    "build:assets": "copy {*.md,LICENSE,manifest.json,assets/**/*,src/**/*.html,src/**/*.css} dist",
+    "build:web-ext": "web-ext build --source-dir=dist --ignore-files=package.json yarn.lock \"**/*.test.js\" --overwrite-dest"
   },
   "repository": {
     "type": "git",
@@ -27,18 +27,20 @@
   },
   "homepage": "https://github.com/hupf/tabmarks#readme",
   "dependencies": {
+    "copy": "^0.3.1",
+    "rollup": "^0.50.0",
+    "rollup-plugin-commonjs": "^8.2.1",
+    "rollup-plugin-node-resolve": "^3.0.0",
     "rxjs": "^5.4.3"
   },
   "devDependencies": {
     "babel-preset-es2015": "^6.24.1",
-    "copy-webpack-plugin": "^4.0.1",
     "eslint": "^4.7.2",
     "eslint-config-airbnb-base": "^11.3.2",
     "eslint-plugin-import": "^2.7.0",
     "jest": "^21.2.0",
     "npm-run-all": "^4.1.1",
-    "web-ext": "^2.0.0",
-    "webpack": "^3.6.0"
+    "web-ext": "^2.0.0"
   },
   "jest": {
     "clearMocks": true
