@@ -2,8 +2,6 @@ import path from 'path';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 
-const production = !process.env.ROLLUP_WATCH;
-
 const inputs = {
   background: 'src/background/index.js',
   defaultPopup: 'src/default-popup/index.js',

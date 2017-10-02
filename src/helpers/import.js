@@ -40,7 +40,7 @@ export default {
             errorCallback({ type: 'folder', name: group.title, error });
           }
         }),
-      Promise.resolve());
+    Promise.resolve());
   },
 
   importTabs(tabs, folder, errorCallback) {
