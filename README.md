@@ -7,9 +7,10 @@ Web Extension for handling groups of tabs persisted as bookmarks.
 
 ## Known issues
 
-* Only tested with Firefox.
+* Switching to a group loads all tabs (which is slow and clutters browser history), see #9
+* No ability to rename, move or delete groups without browser restart, see #6
 * No i18n support (currently english only)
-* Changes to the persisted bookmarks will not yet be synchronized with the open tabs.
+* Only tested with Firefox
 
 
 ## Development (for Firefox)
