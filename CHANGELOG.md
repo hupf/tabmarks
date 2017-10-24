@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0beta3
+
+* Use Rollup.js for bundling
+
 ## 1.0.0beta2
 
 * More robust tabs to bookmarks sync
