@@ -1,6 +1,6 @@
 {
   "name": "tabmarks",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "Web Extension for handling groups of tabs persisted as bookmarks",
   "main": "index.js",
   "scripts": {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0beta4
+
+* Fix issue with blank popups
+
 ## 1.0.0beta3
 
 * Use Rollup.js for bundling
