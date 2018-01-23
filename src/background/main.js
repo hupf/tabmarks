@@ -69,6 +69,8 @@ export default {
     return Promise.all([groupsHelper.getSelectedGroupId(windowId),
       tabsHelper.getRelevantOfWindow(windowId)])
       .then(([groupId, tabs]) => {
+        if (!groupId) { return null; }
+
         if (tabs.length === 0) {
           // Browser opens new tab on startup
           return this.selectGroup(windowId, groupId);
