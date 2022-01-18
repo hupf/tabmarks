@@ -2,6 +2,8 @@
 
 Web Extension for handling groups of tabs persisted as bookmarks.
 
+Available on AMO here: https://addons.mozilla.org/firefox/addon/tabmarks/
+
 [![Build Status](https://travis-ci.org/hupf/tabmarks.svg?branch=master)](https://travis-ci.org/hupf/tabmarks)
 
 
@@ -9,7 +11,7 @@ Web Extension for handling groups of tabs persisted as bookmarks.
 
 * Switching to a group loads all tabs (which is slow and clutters browser history), see #9
 * No ability to rename, move or delete groups without browser restart, see #6
-* No i18n support (currently english only)
+* No i18n support (currently English only)
 * Only tested with Firefox
 
 
@@ -38,7 +40,7 @@ Creating a ZIP file (will be put in `web-ext-artifacts/`):
 
 ## Author
 
-Mathis Hofer (thanks to [Puzzle ITC](https://puzzle.ch) for letting me starting this project)
+Mathis Hofer (thanks to [Puzzle ITC](https://puzzle.ch) for letting me start this project)
 
 
 ## License
